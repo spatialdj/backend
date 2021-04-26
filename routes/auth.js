@@ -21,7 +21,9 @@ function getUserKey (username) {
 /* GET users listing. */
 router.get('/', (req, res, next) => {
   if (req.isAuthenticated()) {
-    return res.status(200).send(req.user)
+    const user = JSON.parse(req.user)
+    delete user.password
+    return res.status(200).json(user)
   }
 
   res.status(401).send()
