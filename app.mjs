@@ -1,17 +1,22 @@
 import createError from 'http-errors'
 import express from 'express'
-import { join } from 'path'
+import path, { join } from 'path'
 import cookieParser from 'cookie-parser'
 import logger from 'morgan'
+import passport from 'passport'
+import session from 'express-session'
+import connectRedis from 'connect-redis'
 
 import indexRouter from './routes/index.js'
 import authRouter from './routes/auth.js'
+import redisClient from './redis_client.js'
+import config from './config.js'
+import './passport_setup.js'
 
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from 'url'
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 const app = express()
 
@@ -21,23 +26,38 @@ app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser())
 app.use(express.static(join(__dirname, 'public')))
 
+const RedisStore = connectRedis(session)
+app.use(
+  session({
+    store: new RedisStore({ client: redisClient }),
+    secret: config.sessionSecret,
+    resave: false
+  })
+)
+
+// passport
+app.use(passport.initialize())
+app.use(passport.session())
+
 app.use('/', indexRouter)
 app.use('/auth', authRouter)
 
 // catch 404 and forward to error handler
-app.use(function (req, res, next) {
+app.use((req, res, next) => {
   next(createError(404))
 })
 
 // error handler
-app.use(function (err, req, res, next) {
+app.use((err, req, res, next) => {
   // set locals, only providing error in development
   res.locals.message = err.message
   res.locals.error = req.app.get('env') === 'development' ? err : {}
 
+  console.log(err)
+
   // render the error page
   res.status(err.status || 500)
-  res.render('error')
+  res.send(err)
 })
 
 export default app
