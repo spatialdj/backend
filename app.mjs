@@ -1,5 +1,6 @@
 import createError from 'http-errors'
 import express from 'express'
+import helmet from 'helmet'
 import path, { join } from 'path'
 import cookieParser from 'cookie-parser'
 import logger from 'morgan'
@@ -20,6 +21,7 @@ const __dirname = path.dirname(__filename)
 
 const app = express()
 
+app.use(helmet())
 app.use(logger('dev'))
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
@@ -31,6 +33,7 @@ app.use(
   session({
     store: new RedisStore({ client: redisClient }),
     secret: config.sessionSecret,
+    name: 'sessionId',
     resave: false
   })
 )
