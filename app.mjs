@@ -45,9 +45,9 @@ app.use(
 app.use(passport.initialize())
 app.use(passport.session())
 
-app.use('/', indexRouter)
-app.use('/auth', authRouter)
-app.use('/rooms', roomsRouter)
+app.use('/api/', indexRouter)
+app.use('/api/auth', authRouter)
+app.use('/api/rooms', roomsRouter)
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
