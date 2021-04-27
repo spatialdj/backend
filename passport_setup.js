@@ -20,6 +20,18 @@ passport.use(new LocalStrategy(
     passwordField: 'password'
   },
   async (username, password, done) => {
+    if (username.length < 3 || username.length > 16) {
+      return done(null, false)
+    }
+
+    if (password.length < 6 || password.length > 64) {
+      return done(null, false)
+    }
+
+    if (!/^\w+$/.test(username)) {
+      return done(null, false)
+    }
+
     try {
       const userExists = await existsAsync(getUserKey(username))
 
@@ -51,7 +63,7 @@ passport.deserializeUser(async (username, done) => {
   try {
     const user = await jsonGetAsync(getUserKey(username))
 
-    done(null, user)
+    done(null, JSON.parse(user))
   } catch (err) {
     done(err)
   }

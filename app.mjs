@@ -9,6 +9,8 @@ import connectRedis from 'connect-redis'
 
 import indexRouter from './routes/index.js'
 import authRouter from './routes/auth.js'
+import roomsRouter from './routes/rooms.js'
+
 import redisClient from './redis_client.js'
 import config from './config.js'
 import './passport_setup.js'
@@ -31,7 +33,8 @@ app.use(
   session({
     store: new RedisStore({ client: redisClient }),
     secret: config.sessionSecret,
-    resave: false
+    resave: false,
+    saveUninitialized: false
   })
 )
 
@@ -41,6 +44,7 @@ app.use(passport.session())
 
 app.use('/', indexRouter)
 app.use('/auth', authRouter)
+app.use('/rooms', roomsRouter)
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
