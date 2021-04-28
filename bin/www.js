@@ -35,12 +35,7 @@ server.on('listening', onListening)
 /**
  * attach server to socket.io
  */
-socketio.attach(server, {
-  cors: {
-    origin: 'http://amritb.github.io',
-    methods: ['GET', 'POST']
-  }
-})
+socketio.attach(server)
 
 /**
  * Normalize a port into a number, string, or false.
