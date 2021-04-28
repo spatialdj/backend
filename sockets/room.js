@@ -19,6 +19,14 @@ async function getConnectedRoom (socketId) {
   return await getAsync(getSocketKey(socketId))
 }
 
+function onJoin (user, roomId) {
+  // TODO
+}
+
+function onLeave (user, roomId) {
+  // TODO
+}
+
 io.on('connection', socket => {
   const req = socket.request
 
@@ -74,6 +82,7 @@ io.on('connection', socket => {
       return ackcb({ success: false })
     }
 
+    onJoin(req.user, roomId)
     socket.join(roomId)
     // set in redis
     await setAsync(getSocketKey(socket.id), roomId)
@@ -92,6 +101,7 @@ io.on('connection', socket => {
     // remove in redis
     await delAsync(getSocketKey(socket.id))
     removeUserFromRoom(req.user, roomId)
+    onLeave(req.user, roomId)
   })
 
   socket.on('disconnecting', async (socket, data, callback) => {
@@ -104,5 +114,6 @@ io.on('connection', socket => {
     // remove in redis
     await delAsync(getSocketKey(socket.id))
     removeUserFromRoom(req.user, roomId)
+    onLeave(req.user, roomId)
   })
 })
