@@ -35,7 +35,8 @@ server.on('listening', onListening)
 /**
  * attach server to socket.io
  */
- socketio.attach(server, {
+
+socketio.attach(server, {
   cors: {
     origin: 'http://localhost:3000',
     methods: ['GET', 'POST'],

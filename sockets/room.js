@@ -20,11 +20,14 @@ async function getConnectedRoom (socketId) {
 }
 
 function onJoin (user, roomId) {
-  // TODO
+  io.in(roomId).emit('user_join', {
+    username: user.username,
+    profilePicture: user.profilePicture
+  })
 }
 
 function onLeave (user, roomId) {
-  // TODO
+  io.in(roomId).emit('user_leave', user.username)
 }
 
 io.on('connection', socket => {
@@ -44,7 +47,11 @@ io.on('connection', socket => {
       profilePicture: req.user.profilePicture
     }
     const numMembers = '1'
-    const members = [host]
+    const members = [{
+      joined: 1,
+      username: req.user.username,
+      profilePicture: req.user.profilePicture
+    }]
     const queue = []
     const currentSong = 'null'
 
@@ -82,11 +89,18 @@ io.on('connection', socket => {
       return ackcb({ success: false })
     }
 
-    onJoin(req.user, roomId)
-    socket.join(roomId)
+    // probably the host joining the room after creation, do not do anything
+    if (await getConnectedRoom(socket.id)) {
+      return ackcb({ success: true })
+    }
+
     // set in redis
     await setAsync(getSocketKey(socket.id), roomId)
+
+    onJoin(req.user, roomId)
+    socket.join(roomId)
     addUserToRoom(req.user, roomId)
+    ackcb({ success: true })
   })
 
   socket.on('leave_room', async () => {
@@ -104,7 +118,7 @@ io.on('connection', socket => {
     onLeave(req.user, roomId)
   })
 
-  socket.on('disconnecting', async (socket, data, callback) => {
+  socket.on('disconnecting', async () => {
     const roomId = await getConnectedRoom(socket.id)
 
     if (!roomId) {
@@ -113,7 +127,17 @@ io.on('connection', socket => {
 
     // remove in redis
     await delAsync(getSocketKey(socket.id))
-    removeUserFromRoom(req.user, roomId)
+    removeUserFromRoom(req.user, roomId, (isRoomOpen, newHost) => {
+      if (!isRoomOpen) {
+        io.in(roomId).emit('room_closed')
+        return
+      }
+
+      if (newHost) {
+        // TODO: emit to clients about new host
+        io.in(roomId).emit('new_host', newHost)
+      }
+    })
     onLeave(req.user, roomId)
   })
 })
