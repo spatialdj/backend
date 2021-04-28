@@ -15,6 +15,8 @@ import roomsRouter from './routes/rooms.js'
 import redisClient from './redis_client.js'
 import config from './config.js'
 import './passport_setup.js'
+import io from './socketio_server.js'
+import './sockets/room.js'
 
 import { fileURLToPath } from 'url'
 
@@ -31,19 +33,26 @@ app.use(cookieParser())
 app.use(express.static(join(__dirname, 'public')))
 
 const RedisStore = connectRedis(session)
-app.use(
-  session({
-    store: new RedisStore({ client: redisClient }),
-    secret: config.sessionSecret,
-    name: 'sessionId',
-    resave: false,
-    saveUninitialized: false
-  })
-)
+const sessionMiddleware = session({
+  store: new RedisStore({ client: redisClient }),
+  secret: config.sessionSecret,
+  name: 'sessionId',
+  resave: false,
+  saveUninitialized: false
+})
+
+app.use(sessionMiddleware)
 
 // passport
 app.use(passport.initialize())
 app.use(passport.session())
+
+// convert a connect middleware to a Socket.IO middleware
+const wrap = middleware => (socket, next) => middleware(socket.request, {}, next)
+
+io.use(wrap(sessionMiddleware))
+io.use(wrap(passport.initialize()))
+io.use(wrap(passport.session()))
 
 app.use('/api/', indexRouter)
 app.use('/api/auth', authRouter)

@@ -7,6 +7,7 @@
 import app from '../app.mjs'
 import { createServer } from 'http'
 import debugLib from 'debug'
+import socketio from '../socketio_server.js'
 
 const debug = debugLib('backend:server')
 
@@ -30,6 +31,16 @@ const server = createServer(app)
 server.listen(port)
 server.on('error', onError)
 server.on('listening', onListening)
+
+/**
+ * attach server to socket.io
+ */
+socketio.attach(server, {
+  cors: {
+    origin: 'http://amritb.github.io',
+    methods: ['GET', 'POST']
+  }
+})
 
 /**
  * Normalize a port into a number, string, or false.
