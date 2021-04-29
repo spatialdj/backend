@@ -11,6 +11,7 @@ import connectRedis from 'connect-redis'
 import indexRouter from './routes/index.js'
 import authRouter from './routes/auth.js'
 import roomsRouter from './routes/rooms.js'
+import songRouter from './routes/song.js'
 
 import redisClient from './redis_client.js'
 import config from './config.js'
@@ -57,6 +58,7 @@ io.use(wrap(passport.session()))
 app.use('/api/', indexRouter)
 app.use('/api/auth', authRouter)
 app.use('/api/rooms', roomsRouter)
+app.use('/api/song', songRouter)
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
