@@ -1,5 +1,5 @@
 import { promisify } from 'util'
-import redis from '../redis_client.js'
+import redis, { roomsIndex } from '../redis_client.js'
 
 // prefix for redis key
 const roomPrefix = 'room:'
@@ -8,6 +8,10 @@ const existsAsync = promisify(redis.exists).bind(redis)
 const hgetAsync = promisify(redis.hget).bind(redis)
 const hsetAsync = promisify(redis.hset).bind(redis)
 const delAsync = promisify(redis.del).bind(redis)
+
+function getRandomNum (min, max) {
+  return Math.floor(Math.random() * (max - min)) + min
+}
 
 // get key in redis given id
 function getRoomKey (id) {
@@ -22,32 +26,37 @@ async function getRoomById (roomId) {
   return await JSON.parse(await hgetAsync(getRoomKey(roomId), 'json'))
 }
 
-async function addUserToRoom (user, roomId) {
-  if (!user) {
-    return
-  }
-
+async function addUserToRoom (user, roomId, onJoin) {
   const room = await getRoomById(roomId)
-  const numMembers = Number(await hgetAsync(getRoomKey(roomId), 'numMembers'))
-  const memberIndex = room.members.findIndex(member => member.username === user.username)
 
-  if (memberIndex !== -1) {
-    room.members[memberIndex].joined++
-    return await hsetAsync(getRoomKey(roomId), 'json', JSON.stringify(room))
+  const numMembers = Number(await hgetAsync(getRoomKey(roomId), 'numMembers'))
+  const members = room.members
+
+  if (Object.prototype.hasOwnProperty.call(members, user.username)) {
+    members[user.username].joined++
+    await hsetAsync(getRoomKey(roomId), 'json', JSON.stringify(room))
+    return room
   }
 
   await hsetAsync(getRoomKey(roomId), 'numMembers', numMembers + 1)
   room.numMembers++
 
-  room.members.push(
-    {
-      joined: 1,
-      username: user.username,
-      profilePicture: user.profilePicture
-    }
-  )
+  const position = {
+    x: getRandomNum(0, 300),
+    y: getRandomNum(0, 300)
+  }
+
+  room.members[user.username] = {
+    joined: 1,
+    username: user.username,
+    profilePicture: user.profilePicture,
+    position
+  }
+
+  onJoin(user, roomId, position)
 
   await hsetAsync(getRoomKey(roomId), 'json', JSON.stringify(room))
+  return room
 }
 
 async function removeUserFromRoom (user, roomId, onRoomChange) {
@@ -58,40 +67,43 @@ async function removeUserFromRoom (user, roomId, onRoomChange) {
   // if user is not null we remove user from members list
   const room = await getRoomById(roomId)
   const members = room.members
-  const memberIndex = room.members.findIndex(member => member.username === user.username)
 
-  if (memberIndex === -1) {
+  if (!Object.prototype.hasOwnProperty.call(members, user.username)) {
     return
   }
 
-  const member = members[memberIndex]
+  const member = room.members[user.username]
   const numMembers = Number(await hgetAsync(getRoomKey(roomId), 'numMembers'))
   let memberLeft = false
 
   // if only one browser/tab is open for this account
   if (member.joined === 1) {
     await hsetAsync(getRoomKey(roomId), 'numMembers', numMembers - 1)
-    members.splice(memberIndex, 1)
+    delete members[user.username]
     memberLeft = true
   } else {
     member.joined--
   }
 
-  if (members.length === 0) {
+  // check if there are no more members
+  if (Object.keys(members).length === 0) {
     onRoomChange(false)
     return await delAsync(getRoomKey(roomId))
   }
 
   // user leaving is the host, pass it to someone else
   if (memberLeft && room.host.username === user.username) {
+    const newHostUser = members[Object.keys(members)[0]]
     const newHost = {
-      username: members[0].username,
-      profilePicture: members[0].profilePicture
+      username: newHostUser.username,
+      profilePicture: newHostUser.profilePicture
     }
 
     // host change
-    onRoomChange(true, newHost)
+    onRoomChange(true, newHost, true)
     room.host = newHost
+  } else if (memberLeft) {
+    onRoomChange(true, null, true)
   }
 
   await hsetAsync(getRoomKey(roomId), 'json', JSON.stringify(room))
