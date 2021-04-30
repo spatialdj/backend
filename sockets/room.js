@@ -141,6 +141,31 @@ io.on('connection', socket => {
     ackcb({ success: true, room: updatedRoom })
   })
 
+  socket.on('pos_change', async (position) => {
+    if (req.isUnauthenticated()) {
+      return
+    }
+
+    const room = await getConnectedRoom(socket.id)
+
+    if (!room) {
+      return
+    }
+
+    const { members } = room
+    const { user } = req
+
+    // user not in room
+    if (!Object.prototype.hasOwnProperty.call(members, user.username)) {
+      return
+    }
+
+    room.members[user.username].position = position
+    await hsetAsync(getRoomKey(room.id), 'json', JSON.stringify(room))
+
+    io.in(room.id).emit('pos_change', user.username, position)
+  })
+
   socket.on('leave_room', async () => {
     const roomId = await getConnectedRoom(socket.id)
 

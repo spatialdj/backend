@@ -75,8 +75,4 @@ router.put('/update/:roomId', async (req, res, next) => {
   res.status(200).json()
 })
 
-// socket io join
-
-// socket io leave
-
 export default router

@@ -1,5 +1,5 @@
 import { promisify } from 'util'
-import redis, { roomsIndex } from '../redis_client.js'
+import redis from '../redis_client.js'
 
 // prefix for redis key
 const roomPrefix = 'room:'
