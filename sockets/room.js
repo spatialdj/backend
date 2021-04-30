@@ -19,13 +19,13 @@ async function getConnectedRoomId (socketId) {
   return await getAsync(getSocketKey(socketId))
 }
 
-function onJoin (user, roomId, posiiton) {
+function onJoin (user, roomId, position) {
   io.in(roomId).emit('user_join', {
     user: {
       username: user.username,
       profilePicture: user.profilePicture
     },
-    posiiton
+    position
   })
 }
 
