@@ -15,7 +15,7 @@ function getSocketKey (socketId) {
   return socketPrefix + socketId
 }
 
-async function getConnectedRoom (socketId) {
+async function getConnectedRoomId (socketId) {
   return await getAsync(getSocketKey(socketId))
 }
 
@@ -120,11 +120,11 @@ io.on('connection', socket => {
       return ackcb({ success: false })
     }
 
-    const room = await getConnectedRoom(socket.id)
+    const connectedRoomId = await getConnectedRoomId(socket.id)
 
     // probably the host joining the room after creation, do not do anything
-    if (room) {
-      return ackcb({ success: true, room: room })
+    if (connectedRoomId) {
+      return ackcb({ success: true, room: await getRoomById(connectedRoomId) })
     }
 
     // set in redis
@@ -146,12 +146,13 @@ io.on('connection', socket => {
       return
     }
 
-    const room = await getConnectedRoom(socket.id)
+    const roomId = await getConnectedRoomId(socket.id)
 
-    if (!room) {
+    if (!roomId) {
       return
     }
 
+    const room = await getRoomById(roomId)
     const { members } = room
     const { user } = req
 
@@ -167,7 +168,7 @@ io.on('connection', socket => {
   })
 
   socket.on('leave_room', async () => {
-    const roomId = await getConnectedRoom(socket.id)
+    const roomId = await getConnectedRoomId(socket.id)
 
     // never joined room
     if (!roomId) {
@@ -181,7 +182,7 @@ io.on('connection', socket => {
   })
 
   socket.on('disconnecting', async () => {
-    const roomId = await getConnectedRoom(socket.id)
+    const roomId = await getConnectedRoomId(socket.id)
 
     if (!roomId) {
       return
