@@ -87,7 +87,7 @@ async function removeUserFromRoom (user, roomId, onRoomChange) {
 
   // check if there are no more members
   if (Object.keys(members).length === 0) {
-    onRoomChange(false)
+    await onRoomChange(false)
     return await delAsync(getRoomKey(roomId))
   }
 
@@ -100,10 +100,10 @@ async function removeUserFromRoom (user, roomId, onRoomChange) {
     }
 
     // host change
-    onRoomChange(true, newHost, user)
+    await onRoomChange(true, newHost, user)
     room.host = newHost
   } else if (memberLeft) {
-    onRoomChange(true, null, user)
+    await onRoomChange(true, null, user)
   }
 
   await hsetAsync(getRoomKey(roomId), 'json', JSON.stringify(room))

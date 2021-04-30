@@ -9,6 +9,9 @@ redisearch(redis)
 // add ft.aggregate command from redisearch
 redis.addCommand('ft.aggregate')
 
+// new command since 6.2.0 for lists
+redis.addCommand('lmove')
+
 const client = redis.createClient({
   host: config.redisHost,
   password: config.redisPassword

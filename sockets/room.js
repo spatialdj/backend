@@ -1,6 +1,7 @@
 import io from '../socketio_server.js'
 import { v4 as uuidv4 } from 'uuid'
 import redis from '../redis_client.js'
+import { addToQueue, removeFromQueue, getQueue, getNextSong, deleteQueue } from '../models/queue.js'
 import { getRoomKey, isRoomValid, addUserToRoom, removeUserFromRoom, getRoomById } from '../models/room.js'
 import { promisify } from 'util'
 
@@ -33,11 +34,15 @@ function onLeave (user, roomId) {
   io.in(roomId).emit('user_leave', user.username)
 }
 
+async function onRoomClose (roomId) {
+  io.in(roomId).emit('room_closed')
+  await deleteQueue(roomId)
+}
+
 function onRoomChange (roomId) {
-  return (isRoomOpen, newHost, userLeft) => {
+  return async (isRoomOpen, newHost, userLeft) => {
     if (!isRoomOpen) {
-      io.in(roomId).emit('room_closed')
-      return
+      return await onRoomClose(roomId)
     }
 
     if (userLeft) {
@@ -55,7 +60,7 @@ function getRandomNum (min, max) {
   return Math.floor(Math.random() * (max - min)) + min
 }
 
-io.on('connection', socket => {
+function onNewSocketConnection (socket) {
   const req = socket.request
 
   socket.on('create_room', async (data, ackcb) => {
@@ -192,4 +197,9 @@ io.on('connection', socket => {
     await delAsync(getSocketKey(socket.id))
     await removeUserFromRoom(req.user, roomId, onRoomChange(roomId))
   })
-})
+}
+
+export default {
+  onNewSocketConnection,
+  getConnectedRoomId
+}

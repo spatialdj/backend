@@ -17,7 +17,8 @@ import redisClient from './redis_client.js'
 import config from './config.js'
 import './passport_setup.js'
 import io from './socketio_server.js'
-import './sockets/room.js'
+import socketsRoom from './sockets/room.js'
+import socketsRoomQueue from './sockets/room_queue.js'
 
 import { fileURLToPath } from 'url'
 
@@ -76,6 +77,12 @@ app.use((err, req, res, next) => {
   // render the error page
   res.status(err.status || 500)
   res.send(err)
+})
+
+// socket.io root listener
+io.on('connection', socket => {
+  socketsRoom.onNewSocketConnection(socket)
+  socketsRoomQueue.onNewSocketConnection(socket)
 })
 
 export default app
