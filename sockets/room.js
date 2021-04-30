@@ -41,7 +41,7 @@ function onRoomChange (roomId) {
     }
 
     if (userLeft) {
-      onLeave()
+      onLeave(userLeft, roomId)
     }
 
     if (newHost) {

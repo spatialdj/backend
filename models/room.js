@@ -100,10 +100,10 @@ async function removeUserFromRoom (user, roomId, onRoomChange) {
     }
 
     // host change
-    onRoomChange(true, newHost, true)
+    onRoomChange(true, newHost, user)
     room.host = newHost
   } else if (memberLeft) {
-    onRoomChange(true, null, true)
+    onRoomChange(true, null, user)
   }
 
   await hsetAsync(getRoomKey(roomId), 'json', JSON.stringify(room))
