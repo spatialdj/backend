@@ -10,10 +10,10 @@ const ftSearchAsync = promisify(redis.ft_search).bind(redis)
 const hsetAsync = promisify(redis.hset).bind(redis)
 
 router.get('/', async (req, res, next) => {
-  const searchQuery = req.body.search
-  const genres = req.body.filters
-  const offset = req.body.skip
-  const limit = req.body.limit
+  const searchQuery = req.query.search ?? ''
+  const genres = req.query.filters ?? []
+  const offset = req.query.skip ?? 0
+  const limit = req.query.limit ?? 10
 
   let redisQuery = '@private:{false}'
 
