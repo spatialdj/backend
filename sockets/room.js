@@ -65,6 +65,7 @@ function onNewSocketConnection (socket) {
 
   socket.on('create_room', async (data, ackcb) => {
     if (req.isUnauthenticated()) {
+      console.log('FAIL create_room', 'Unauthed user')
       return ackcb({ success: false })
     }
 
@@ -117,11 +118,13 @@ function onNewSocketConnection (socket) {
 
     socket.join(id)
     await setAsync(getSocketKey(socket.id), id)
+    console.log(`create_room: ${room.id}`, req.user.username)
     ackcb({ success: true, room })
   })
 
   socket.on('join_room', async (roomId, ackcb) => {
     if (!(await isRoomValid(roomId))) {
+      console.log(`FAIL join_room: ${roomId}`, 'Invalid roomId')
       return ackcb({ success: false })
     }
 
@@ -129,7 +132,8 @@ function onNewSocketConnection (socket) {
 
     // probably the host joining the room after creation, do not do anything
     if (connectedRoomId) {
-      return ackcb({ success: true, room: await getRoomById(connectedRoomId) })
+      console.log(`join_room: ${roomId}`, req.user.username)
+      return ackcb({ success: true, guest: false, room: await getRoomById(connectedRoomId) })
     }
 
     // set in redis
@@ -138,22 +142,25 @@ function onNewSocketConnection (socket) {
     socket.join(roomId)
 
     if (req.isUnauthenticated()) {
-      return ackcb({ success: true, room: getRoomById(roomId) })
+      console.log(`join_room: ${roomId}`, 'Unauthed user')
+      return ackcb({ success: true, guest: true, room: await getRoomById(roomId) })
     }
 
     const updatedRoom = await addUserToRoom(req.user, roomId, onJoin)
-
-    ackcb({ success: true, room: updatedRoom })
+    console.log(`join_room: ${roomId}`, req.user.username)
+    ackcb({ success: true, guest: false, room: updatedRoom })
   })
 
   socket.on('pos_change', async (position) => {
     if (req.isUnauthenticated()) {
+      console.log(`FAIL pos_change: ${roomId}`, 'Unauthed user')
       return
     }
 
     const roomId = await getConnectedRoomId(socket.id)
 
     if (!roomId) {
+      console.log(`FAIL pos_change: ${roomId}`, 'Invalid roomId')
       return
     }
 
@@ -163,6 +170,7 @@ function onNewSocketConnection (socket) {
 
     // user not in room
     if (!Object.prototype.hasOwnProperty.call(members, user.username)) {
+      console.log(`FAIL pos_change: ${roomId}`, `User ${user.username} not in room`)
       return
     }
 
@@ -170,6 +178,7 @@ function onNewSocketConnection (socket) {
     await hsetAsync(getRoomKey(room.id), 'json', JSON.stringify(room))
 
     io.in(room.id).emit('pos_change', user.username, position)
+    console.log(`pos_change: ${roomId}`, user.username)
   })
 
   socket.on('leave_room', async () => {
@@ -177,6 +186,7 @@ function onNewSocketConnection (socket) {
 
     // never joined room
     if (!roomId) {
+      console.log(`FAIL leave_room: ${roomId}`, 'Invalid roomId')
       return
     }
 
@@ -184,18 +194,21 @@ function onNewSocketConnection (socket) {
     // remove in redis
     await delAsync(getSocketKey(socket.id))
     await removeUserFromRoom(req.user, roomId, onRoomChange(roomId))
+    console.log(`leave_room: ${roomId}`, req?.user?.username ?? 'Unauthed user')
   })
 
   socket.on('disconnecting', async () => {
     const roomId = await getConnectedRoomId(socket.id)
 
     if (!roomId) {
+      console.log(`FAIL disconnecting: ${roomId}`, 'Invalid roomId')
       return
     }
 
     // remove in redis
     await delAsync(getSocketKey(socket.id))
     await removeUserFromRoom(req.user, roomId, onRoomChange(roomId))
+    console.log(`disconnecting: ${roomId}`, req?.user?.username ?? 'Unauthed user')
   })
 }
 
