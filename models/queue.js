@@ -1,4 +1,5 @@
 import redis from '../redis_client.js'
+import io from '../socketio_server.js'
 import { promisify } from 'util'
 
 const delAsync = promisify(redis.del).bind(redis)
@@ -9,6 +10,7 @@ const lmoveAsync = promisify(redis.lmove).bind(redis)
 const lindexAsync = promisify(redis.lindex).bind(redis)
 
 const queuePrefix = 'queue:'
+const timers = new Map()
 
 function getQueueKey (roomId) {
   return queuePrefix + roomId
@@ -16,6 +18,7 @@ function getQueueKey (roomId) {
 
 async function deleteQueue (roomId) {
   await delAsync(getQueueKey(roomId))
+  timers.delete(roomId)
 }
 
 async function addToQueue (roomId, user) {
@@ -38,11 +41,17 @@ async function removeFromQueue (roomId, user) {
 
 async function getNextSong (roomId) {
   // move first user in queue to last in queue
-  await lmoveAsync(getQueueKey(roomId), 'LEFT', 'RIGHT')
+  const username = await lmoveAsync(getQueueKey(roomId), 'LEFT', 'RIGHT')
+
+  if (!username) {
+    return null
+  }
 
   return {
-    host: '',
-    user: 'https://www.youtube.com/watch?v=QBQoBU_wo-s'
+    username: username,
+    id: 'QBQoBU_wo-s',
+    duration: 148000,
+    title: 'Monke monke monke some song title'
   }
 }
 
@@ -51,5 +60,6 @@ export {
   addToQueue,
   getQueue,
   removeFromQueue,
-  getNextSong
+  getNextSong,
+  timers
 }

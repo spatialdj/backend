@@ -153,14 +153,14 @@ function onNewSocketConnection (socket) {
 
   socket.on('pos_change', async (position) => {
     if (req.isUnauthenticated()) {
-      console.log(`FAIL pos_change`, 'Unauthed user')
+      console.log('FAIL pos_change', 'Unauthed user')
       return
     }
 
     const roomId = await getConnectedRoomId(socket.id)
 
     if (!roomId) {
-      console.log(`FAIL pos_change`, 'Invalid roomId')
+      console.log('FAIL pos_change', 'Invalid roomId')
       return
     }
 
@@ -186,7 +186,7 @@ function onNewSocketConnection (socket) {
 
     // never joined room
     if (!roomId) {
-      console.log(`FAIL leave_room`, 'Invalid roomId')
+      console.log('FAIL leave_room', 'Invalid roomId')
       return
     }
 
@@ -201,7 +201,7 @@ function onNewSocketConnection (socket) {
     const roomId = await getConnectedRoomId(socket.id)
 
     if (!roomId) {
-      console.log(`FAIL disconnecting`, 'Invalid roomId')
+      console.log('FAIL disconnecting', 'Invalid roomId')
       return
     }
 

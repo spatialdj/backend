@@ -26,6 +26,15 @@ async function getRoomById (roomId) {
   return await JSON.parse(await hgetAsync(getRoomKey(roomId), 'json'))
 }
 
+async function setSong (roomId, song, startTime) {
+  const room = await getRoomById(roomId)
+
+  room.currentSong = song
+  room.songStartTime = startTime
+
+  await hsetAsync(getRoomKey(roomId), 'json', JSON.stringify(room))
+}
+
 async function addUserToRoom (user, roomId, onJoin) {
   const room = await getRoomById(roomId)
 
@@ -114,5 +123,6 @@ export {
   isRoomValid,
   getRoomById,
   addUserToRoom,
-  removeUserFromRoom
+  removeUserFromRoom,
+  setSong
 }
