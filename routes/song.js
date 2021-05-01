@@ -32,10 +32,10 @@ router.get('/search', async (req, res) => {
     return {
       id: item.id.videoId,
       title: snippet.title,
-      thumbnails: snippet.thumbnails
+      thumbnails: snippet.thumbnails,
+      channelTitle: snippet.channelTitle
     }
   })
-
   res.status(200).json({ success: true, data: { videos } })
 })
 
