@@ -19,7 +19,6 @@ router.get('/', async (req, res, next) => {
 
   if (searchQuery.length > 0) {
     redisQuery += ` @name|description:(${searchQuery})`
-    console.log('contains query')
   }
 
   if (genres.length > 0) {
