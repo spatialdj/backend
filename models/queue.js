@@ -1,5 +1,4 @@
 import redis from '../redis_client.js'
-import io from '../socketio_server.js'
 import { promisify } from 'util'
 
 const delAsync = promisify(redis.del).bind(redis)
@@ -23,7 +22,10 @@ async function deleteQueue (roomId) {
 
 async function addToQueue (roomId, user) {
   // check if user is already in queue
-  if (await lindexAsync(getQueueKey(roomId), user.username)) {
+  try {
+    // error is thrown if not in list
+    await lindexAsync(getQueueKey(roomId), user.username)
+  } catch (err) {
     return null
   }
 
@@ -40,8 +42,9 @@ async function removeFromQueue (roomId, user) {
 }
 
 async function getNextSong (roomId) {
+  const queueKey = getQueueKey(roomId)
   // move first user in queue to last in queue
-  const username = await lmoveAsync(getQueueKey(roomId), 'LEFT', 'RIGHT')
+  const username = await lmoveAsync(queueKey, queueKey, 'LEFT', 'RIGHT')
 
   if (!username) {
     return null

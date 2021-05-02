@@ -17,7 +17,7 @@ router.get('/', async (req, res, next) => {
 
   let redisQuery = '@private:{false}'
 
-  if (searchQuery.length > 0) {
+  if (searchQuery !== '*' && searchQuery.length > 0) {
     redisQuery += ` @name|description:(${searchQuery})`
   }
 

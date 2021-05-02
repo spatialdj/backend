@@ -8,7 +8,7 @@ const { getConnectedRoomId } = socketsRoom
 const QUEUE_BUFFER_MS = 5000
 
 async function startPlayingQueue (roomId) {
-  const song = getNextSong(roomId)
+  const song = await getNextSong(roomId)
 
   if (song === null) {
     // no one is in queue, stop
@@ -18,10 +18,12 @@ async function startPlayingQueue (roomId) {
   const startTime = Date.now()
 
   // set song in room
-  await setSong(song, startTime)
+  await setSong(roomId, song, startTime)
   io.to(roomId).emit('play_song', song.username, song.id, startTime)
 
-  const timer = setTimeout(async () => await startPlayingQueue(), song.duration + QUEUE_BUFFER_MS)
+  const timer = setTimeout(async () => {
+    await startPlayingQueue(roomId)
+  }, song.duration + QUEUE_BUFFER_MS)
 
   queueTimers.set(roomId, timer)
   // todo: implement skip with clearTimeout(timer)
@@ -36,7 +38,9 @@ function onNewSocketConnection (socket) {
     }
 
     const { user } = req
-    const roomId = await getConnectedRoomId(user.username)
+    const roomId = await getConnectedRoomId(socket.id)
+
+    console.log(roomId)
 
     // user not connected to room
     if (!roomId) {
@@ -47,6 +51,8 @@ function onNewSocketConnection (socket) {
     const position = await addToQueue(roomId, user)
 
     io.to(roomId).emit('user_join_queue', position, userFragment)
+
+    console.log('pos ' + position)
 
     if (position === 0) {
       // play the user's song since it's the first in queue
@@ -59,7 +65,7 @@ function onNewSocketConnection (socket) {
       return
     }
 
-    const roomId = await getConnectedRoomId(req.user.username)
+    const roomId = await getConnectedRoomId(socket.id)
 
     // user not connected to room
     if (!roomId) {
