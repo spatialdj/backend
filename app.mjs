@@ -9,7 +9,7 @@ import session from 'express-session'
 import connectRedis from 'connect-redis'
 
 import indexRouter from './routes/index.js'
-import authRouter from './routes/auth.js'
+import { authRouter } from './routes/auth.js'
 import roomsRouter from './routes/rooms.js'
 import songRouter from './routes/song.js'
 import { playlistRouter } from './routes/playlist.js'
