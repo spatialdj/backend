@@ -1,0 +1,188 @@
+import express from 'express'
+import redis from '../redis_client.js'
+import { v4 as uuidv4 } from 'uuid'
+import { promisify } from 'util'
+import { getUserKey } from './auth.js'
+
+const router = express.Router()
+
+const jsonSetAsync = promisify(redis.json_set).bind(redis)
+const jsonGetAsync = promisify(redis.json_get).bind(redis)
+const jsonDelAsync = promisify(redis.json_del).bind(redis)
+const jsonArrAppendAsync = promisify(redis.json_arrappend).bind(redis)
+const jsonObjKeysAsync = promisify(redis.json_objkeys).bind(redis)
+
+router.post('/create', async (req, res) => {
+  if (req.isUnauthenticated()) {
+    return res.status(401).json()
+  }
+
+  const name = req.body.name
+  const playlistId = uuidv4()
+
+  const playlist = {
+    id: playlistId,
+    name: name,
+    user: req.user.username,
+    queue: []
+  }
+
+  try {
+    await jsonSetAsync(getUserKey(req.user.username), '.playlist.' + playlistId, JSON.stringify(playlist))
+  } catch (error) {
+    return res.status(400).json(error)
+  }
+
+  res.status(200).json({
+    success: true,
+    playlistId: playlistId
+  })
+})
+
+router.put('/add/:playlistId', async (req, res) => {
+  if (req.isUnauthenticated()) {
+    return res.status(401).json()
+  }
+
+  const playlistId = req.params.playlistId
+  const song = req.body.song
+  const username = req.user.username
+
+  try {
+    await jsonArrAppendAsync(getUserKey(username), '.playlist.' + playlistId + '.queue', JSON.stringify(song))
+  } catch (error) {
+    return res.status(400).json(error)
+  }
+
+  res.status(200).json({
+    sucess: true,
+    song: song
+  })
+})
+
+router.delete('/remove/:playlistId', async (req, res) => {
+  if (req.isUnauthenticated()) {
+    return res.status(401).json()
+  }
+
+  const playlistId = req.params.playlistId
+  const songId = req.body.id
+  const username = req.user.username
+
+  let success = false
+  const songs = JSON.parse(await jsonGetAsync(getUserKey(username), '.playlist.' + playlistId + '.queue'))
+  for (let idx = 0; idx < songs.length; idx++) {
+    if (songs[idx].id === songId) {
+      songs.splice(idx, 1)
+      success = true
+      break
+    }
+  }
+  console.log(songs)
+
+  try {
+    await jsonSetAsync(getUserKey(username), '.playlist.' + playlistId + '.queue', JSON.stringify(songs))
+  } catch (error) {
+    return res.status(400).json(error)
+  }
+
+  res.status(200).json({
+    success: success
+  })
+})
+
+router.delete('/delete/:playlistId', async (req, res) => {
+  if (req.isUnauthenticated()) {
+    return res.status(401).json()
+  }
+
+  const playlistId = req.params.playlistId
+  const username = req.user.username
+
+  const success = await jsonDelAsync(getUserKey(username), '.playlist.' + playlistId)
+
+  res.status(200).json({
+    success: Boolean(success)
+  })
+})
+
+router.put('/update/:playlistId', async (req, res) => {
+  if (req.isUnauthenticated()) {
+    return res.status(401).json()
+  }
+
+  const playlistId = req.params.playlistId
+  const username = req.user.username
+  const playlist = req.body.playlist
+
+  const success = await jsonSetAsync(getUserKey(username), '.playlist.' + playlistId, JSON.stringify(playlist), 'XX')
+
+  res.status(200).json({
+    success: Boolean(success)
+  })
+})
+
+router.get('/get/:playlistId', async (req, res) => {
+  if (req.isUnauthenticated()) {
+    return res.status(401).json()
+  }
+
+  const playlistId = req.params.playlistId
+  const username = req.user.username
+
+  try {
+    const songs = await jsonGetAsync(getUserKey(username), '.playlist.' + playlistId + '.queue')
+
+    res.status(200).json({
+      success: true,
+      playlist: {
+        id: playlistId,
+        songs: songs
+      }
+    })
+  } catch (error) {
+    return res.status(400).json(error)
+  }
+})
+
+router.post('/select/:playlistId', async (req, res) => {
+  if (req.isUnauthenticated()) {
+    return res.status(401).json()
+  }
+
+  const playlistId = req.params.playlistId
+  const username = req.user.username
+  let success = false
+
+  try {
+    const playlistKeys = await jsonObjKeysAsync(getUserKey(username), '.playlist')
+
+    if (playlistKeys.includes(playlistId)) {
+      await jsonSetAsync(getUserKey(username), '.selectedPlaylist', JSON.stringify(playlistId))
+      success = true
+    }
+  } catch (error) {
+    return res.status(400).json(error)
+  }
+
+  res.status(200).json({
+    success: success
+  })
+})
+
+router.get('/list', async (req, res) => {
+  if (req.isUnauthenticated()) {
+    return res.status(401).json()
+  }
+
+  const username = req.user.username
+
+  const playlist = JSON.parse(await jsonGetAsync(getUserKey(username), '.playlist'))
+  console.log(playlist)
+
+  res.status(200).json({
+    playlist: Object.values(playlist)
+  })
+})
+
+export { router as playlistRouter }

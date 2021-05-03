@@ -64,7 +64,7 @@ router.post('/register', async (req, res, next) => {
     username: username,
     password: passwordHash,
     profilePicture: `http://tinygraphs.com/labs/isogrids/hexa16/${username}?theme=bythepool&numcolors=4&fmt=svg`,
-    playlist: []
+    playlist: {}
   }
 
   await jsonSetAsync(getUserKey(username), '.', JSON.stringify(user))
@@ -78,4 +78,4 @@ router.post('/register', async (req, res, next) => {
   res.status(200).send()
 })
 
-export default router
+export { router as authRouter, getUserKey }

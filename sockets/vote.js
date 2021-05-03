@@ -49,3 +49,7 @@ function onNewSocketConnection (socket) {
     io.to(roomId).emit('user_vote', room.votes)
   })
 }
+
+export default {
+  onNewSocketConnection
+}
