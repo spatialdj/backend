@@ -23,7 +23,7 @@ router.get('/info', async (req, res, next) => {
 })
 
 router.get('/search', async (req, res) => {
-  const query = req.query.search;
+  const query = req.query.search
   const response = await api.searchAll(query, 20)
 
   const videos = Array.from(response.items).map((item) => {

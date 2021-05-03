@@ -29,8 +29,15 @@ async function getRoomById (roomId) {
 async function setSong (roomId, song, startTime) {
   const room = await getRoomById(roomId)
 
-  room.currentSong = song
-  room.songStartTime = startTime
+  if (song == null) {
+    delete room.currentSong
+    delete room.songStartTime
+    delete room.votes
+  } else {
+    room.currentSong = song
+    room.songStartTime = startTime
+    room.votes = {}
+  }
 
   await hsetAsync(getRoomKey(roomId), 'json', JSON.stringify(room))
 }
@@ -109,10 +116,10 @@ async function removeUserFromRoom (user, roomId, onRoomChange) {
     }
 
     // host change
-    await onRoomChange(true, newHost, user)
+    await onRoomChange(room, true, newHost, user)
     room.host = newHost
   } else if (memberLeft) {
-    await onRoomChange(true, null, user)
+    await onRoomChange(room, true, null, user)
   }
 
   await hsetAsync(getRoomKey(roomId), 'json', JSON.stringify(room))

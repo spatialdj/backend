@@ -1,6 +1,6 @@
 import io from '../socketio_server.js'
 import { addToQueue, removeFromQueue, getNextSong, timers as queueTimers } from '../models/queue.js'
-import { setSong } from '../models/room.js'
+import { setSong, getRoomById } from '../models/room.js'
 import socketsRoom from './room.js'
 
 const { getConnectedRoomId } = socketsRoom
@@ -12,6 +12,8 @@ async function startPlayingQueue (roomId) {
 
   if (song === null) {
     // no one is in queue, stop
+    io.to(roomId).emit('stop_song')
+    await setSong(roomId, null)
     return
   }
 
@@ -40,8 +42,6 @@ function onNewSocketConnection (socket) {
     const { user } = req
     const roomId = await getConnectedRoomId(socket.id)
 
-    console.log(roomId)
-
     // user not connected to room
     if (!roomId) {
       return
@@ -49,12 +49,15 @@ function onNewSocketConnection (socket) {
 
     const userFragment = { username: user.username, profilePicture: user.profilePicture }
     const position = await addToQueue(roomId, user)
+    const room = await getRoomById(roomId)
+
+    if (!room) {
+      return
+    }
 
     io.to(roomId).emit('user_join_queue', position, userFragment)
 
-    console.log('pos ' + position)
-
-    if (position === 0) {
+    if (room.currentSong === null && position === 0) {
       // play the user's song since it's the first in queue
       await startPlayingQueue(roomId)
     }

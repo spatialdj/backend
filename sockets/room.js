@@ -39,20 +39,29 @@ async function onRoomClose (roomId) {
   await deleteQueue(roomId)
 }
 
-function onRoomChange (roomId) {
-  return async (isRoomOpen, newHost, userLeft) => {
-    if (!isRoomOpen) {
-      return await onRoomClose(roomId)
+async function onRoomChange (room, isRoomOpen, newHost, userLeft) {
+  const roomId = room.id
+
+  if (!isRoomOpen) {
+    return await onRoomClose(roomId)
+  }
+
+  if (userLeft) {
+    onLeave(userLeft, roomId)
+
+    // remove the leaving user's vote
+    if (!Object.prototype.hasOwnProperty.call(room.votes, userLeft.username)) {
+      return
     }
 
-    if (userLeft) {
-      onLeave(userLeft, roomId)
-    }
+    delete room.votes[userLeft.username]
+    await hsetAsync(getRoomKey(roomId), 'json', JSON.stringify(room))
+    io.to(roomId).emit('user_vote', room.votes)
+  }
 
-    if (newHost) {
+  if (newHost) {
     // TODO: emit to clients about new host
-      io.in(roomId).emit('new_host', newHost)
-    }
+    io.in(roomId).emit('new_host', newHost)
   }
 }
 
@@ -193,7 +202,7 @@ function onNewSocketConnection (socket) {
     socket.leave(roomId)
     // remove in redis
     await delAsync(getSocketKey(socket.id))
-    await removeUserFromRoom(req.user, roomId, onRoomChange(roomId))
+    await removeUserFromRoom(req.user, roomId, onRoomChange)
     console.log(`leave_room: ${roomId}`, req?.user?.username ?? 'Unauthed user')
   })
 
@@ -207,7 +216,7 @@ function onNewSocketConnection (socket) {
 
     // remove in redis
     await delAsync(getSocketKey(socket.id))
-    await removeUserFromRoom(req.user, roomId, onRoomChange(roomId))
+    await removeUserFromRoom(req.user, roomId, onRoomChange)
     console.log(`disconnecting: ${roomId}`, req?.user?.username ?? 'Unauthed user')
   })
 }
