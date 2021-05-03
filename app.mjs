@@ -18,8 +18,10 @@ import redisClient from './redis_client.js'
 import config from './config.js'
 import './passport_setup.js'
 import io from './socketio_server.js'
+
 import socketsRoom from './sockets/room.js'
 import socketsRoomQueue from './sockets/room_queue.js'
+import socketsVote from './sockets/vote.js'
 
 import { fileURLToPath } from 'url'
 
@@ -85,6 +87,7 @@ app.use((err, req, res, next) => {
 io.on('connection', socket => {
   socketsRoom.onNewSocketConnection(socket)
   socketsRoomQueue.onNewSocketConnection(socket)
+  socketsVote.onNewSocketConnection(socket)
 })
 
 export default app
