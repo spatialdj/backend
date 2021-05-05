@@ -47,13 +47,16 @@ function onNewSocketConnection (socket) {
       return
     }
 
-    const userFragment = { username: user.username, profilePicture: user.profilePicture }
-    const position = await addToQueue(roomId, user)
     const room = await getRoomById(roomId)
 
     if (!room) {
       return
     }
+
+    const position = await addToQueue(roomId, user)
+    const userFragment = { username: user.username, profilePicture: user.profilePicture }
+
+    console.log(position)
 
     io.to(roomId).emit('user_join_queue', position, userFragment)
 

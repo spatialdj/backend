@@ -67,17 +67,22 @@ async function getNextSong (roomId) {
   while (await llenAsync(queueKey) > 0) {
     // move first user in queue to last in queue
     const username = await lmoveAsync(queueKey, queueKey, 'LEFT', 'RIGHT')
-    if (!username) return null
+
+    if (!username) {
+      return null
+    }
 
     const userKey = getUserKey(username)
 
     const selectedPlaylist = await jsonGetAsync(userKey, '.selectedPlaylist')
+
     if (!selectedPlaylist) {
       await rpopAsync(queueKey)
       continue
     }
 
     const nextSong = await jsonArrPopAsync(userKey, '.playlist.' + selectedPlaylist + '.queue')
+
     if (!nextSong) {
       await rpopAsync(queueKey)
       continue
