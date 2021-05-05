@@ -21,7 +21,7 @@ async function startPlayingQueue (roomId) {
 
   // set song in room
   await setSong(roomId, song, startTime)
-  io.to(roomId).emit('play_song', song.username, song.id, startTime)
+  io.to(roomId).emit('play_song', song.username, song.videoId, startTime)
 
   const timer = setTimeout(async () => {
     await startPlayingQueue(roomId)
@@ -47,13 +47,14 @@ function onNewSocketConnection (socket) {
       return
     }
 
-    const userFragment = { username: user.username, profilePicture: user.profilePicture }
-    const position = await addToQueue(roomId, user)
     const room = await getRoomById(roomId)
 
     if (!room) {
       return
     }
+
+    const position = await addToQueue(roomId, user)
+    const userFragment = { username: user.username, profilePicture: user.profilePicture }
 
     io.to(roomId).emit('user_join_queue', position, userFragment)
 

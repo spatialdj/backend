@@ -6,9 +6,9 @@ const delAsync = promisify(redis.del).bind(redis)
 const lrangeAsync = promisify(redis.lrange).bind(redis)
 const lremAsync = promisify(redis.lrem).bind(redis)
 const rpushAsync = promisify(redis.rpush).bind(redis)
-const rpopAsync = promisify(redis.rpop).bind(redis)
+const lpopAsync = promisify(redis.lpop).bind(redis)
 const lmoveAsync = promisify(redis.lmove).bind(redis)
-const lindexAsync = promisify(redis.lindex).bind(redis)
+const lposAsync = promisify(redis.lpos).bind(redis)
 const llenAsync = promisify(redis.llen).bind(redis)
 
 const jsonGetAsync = promisify(redis.json_get).bind(redis)
@@ -17,14 +17,6 @@ const jsonArrAppendAsync = promisify(redis.json_arrappend).bind(redis)
 
 const queuePrefix = 'queue:'
 const timers = new Map()
-
-async function getNextPlaylistSong (username, playlistId) {
-  const song = await jsonArrPopAsync(getUserKey(username), '.playlist.' + playlistId, 0)
-  if (song !== null) {
-    return JSON.parse(song)
-  }
-  return null
-}
 
 function getQueueKey (roomId) {
   return queuePrefix + roomId
@@ -37,10 +29,7 @@ async function deleteQueue (roomId) {
 
 async function addToQueue (roomId, user) {
   // check if user is already in queue
-  try {
-    // error is thrown if not in list
-    await lindexAsync(getQueueKey(roomId), user.username)
-  } catch (err) {
+  if (await lposAsync(getQueueKey(roomId), user.username) != null) {
     return null
   }
 
@@ -53,7 +42,7 @@ async function getQueue (roomId) {
 }
 
 async function removeFromQueue (roomId, user) {
-  await lremAsync(getQueueKey(roomId), user.username)
+  await lremAsync(getQueueKey(roomId), -1, user.username)
 }
 
 async function getNextSong (roomId) {
@@ -62,28 +51,40 @@ async function getNextSong (roomId) {
   // is empty, they'll be removed from the queue.
 
   const queueKey = getQueueKey(roomId)
-
   let song = null
+
   while (await llenAsync(queueKey) > 0) {
     // move first user in queue to last in queue
     const username = await lmoveAsync(queueKey, queueKey, 'LEFT', 'RIGHT')
-    if (!username) return null
+
+    if (!username) {
+      return null
+    }
 
     const userKey = getUserKey(username)
+    let selectedPlaylist = null
 
-    const selectedPlaylist = await jsonGetAsync(userKey, '.selectedPlaylist')
+    try {
+      selectedPlaylist = JSON.parse(await jsonGetAsync(userKey, '.selectedPlaylist'))
+    } catch (err) {
+      // path does not exist
+    }
+
     if (!selectedPlaylist) {
-      await rpopAsync(queueKey)
+      await lpopAsync(queueKey)
+      // todo: send socket event telling user they have been removed from queue
       continue
     }
 
-    const nextSong = await jsonArrPopAsync(userKey, '.playlist.' + selectedPlaylist + '.queue', 0)
+    const nextSong = await jsonArrPopAsync(userKey, `.playlist.${selectedPlaylist}.queue`, 0)
+
     if (!nextSong) {
-      await rpopAsync(queueKey)
+      await lpopAsync(queueKey)
+      // todo: send socket event telling user they have been removed from queue
       continue
     }
 
-    await jsonArrAppendAsync(userKey, '.playlist.' + selectedPlaylist + '.queue', nextSong)
+    await jsonArrAppendAsync(userKey, `.playlist.${selectedPlaylist}.queue`, nextSong)
     song = JSON.parse(nextSong)
     break
   }

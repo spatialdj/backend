@@ -3,6 +3,7 @@ import redis from '../redis_client.js'
 import { v4 as uuidv4 } from 'uuid'
 import { promisify } from 'util'
 import { getUserKey } from './auth.js'
+import { getVideoDuration } from '../models/youtube.js'
 
 const router = express.Router()
 
@@ -47,8 +48,15 @@ router.put('/add/:playlistId', async (req, res) => {
   const playlistId = req.params.playlistId
   const song = req.body.song
   const username = req.user.username
+  const duration = await getVideoDuration(song.videoId)
+
+  if (duration == null) {
+    // invalid video id
+    return res.status(400).json({ success: false })
+  }
 
   song.id = uuidv4()
+  song.duration = duration
 
   try {
     await jsonArrAppendAsync(getUserKey(username), '.playlist.' + playlistId + '.queue', JSON.stringify(song))
@@ -57,7 +65,7 @@ router.put('/add/:playlistId', async (req, res) => {
   }
 
   res.status(200).json({
-    sucess: true,
+    success: true,
     song: song
   })
 })
