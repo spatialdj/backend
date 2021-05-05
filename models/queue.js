@@ -77,7 +77,7 @@ async function getNextSong (roomId) {
       continue
     }
 
-    const nextSong = await jsonArrPopAsync(userKey, '.playlist.' + selectedPlaylist + '.queue')
+    const nextSong = await jsonArrPopAsync(userKey, '.playlist.' + selectedPlaylist + '.queue', 0)
     if (!nextSong) {
       await rpopAsync(queueKey)
       continue
