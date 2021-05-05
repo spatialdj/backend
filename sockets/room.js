@@ -1,7 +1,7 @@
 import io from '../socketio_server.js'
 import { v4 as uuidv4 } from 'uuid'
 import redis from '../redis_client.js'
-import { addToQueue, removeFromQueue, getQueue, getNextSong, deleteQueue } from '../models/queue.js'
+import { removeFromQueue, getQueue, deleteQueue } from '../models/queue.js'
 import { getRoomKey, isRoomValid, addUserToRoom, removeUserFromRoom, getRoomById } from '../models/room.js'
 import { promisify } from 'util'
 
@@ -59,6 +59,8 @@ async function onRoomChange (room, isRoomOpen, newHost, userLeft) {
       await hsetAsync(getRoomKey(roomId), 'json', JSON.stringify(room))
       io.to(roomId).emit('user_vote', room.votes)
     }
+
+    await removeFromQueue(roomId, userLeft)
   }
 
   if (newHost) {
@@ -91,7 +93,7 @@ function onNewSocketConnection (socket) {
     const numMembers = '1'
     const members = {}
     const queue = []
-    const currentSong = 'null'
+    const currentSong = null
 
     members[req.user.username] = {
       joined: 1,
@@ -142,7 +144,9 @@ function onNewSocketConnection (socket) {
 
     // probably the host joining the room after creation, do not do anything
     if (connectedRoomId) {
-      return ackcb({ success: true, guest: false, room: await getRoomById(connectedRoomId) })
+      const room = await getRoomById(connectedRoomId)
+      room.queue = await getQueue(roomId)
+      return ackcb({ success: true, guest: false, room: room })
     }
 
     // set in redis
@@ -151,11 +155,16 @@ function onNewSocketConnection (socket) {
     socket.join(roomId)
 
     if (req.isUnauthenticated()) {
-      return ackcb({ success: true, guest: true, room: await getRoomById(roomId) })
+      const room = await getRoomById(roomId)
+      room.queue = await getQueue(roomId)
+      return ackcb({ success: true, guest: true, room: room })
     }
 
     const updatedRoom = await addUserToRoom(req.user, roomId, onJoin)
     console.log(`join_room: ${roomId}`, req.user.username)
+
+    updatedRoom.queue = await getQueue(roomId)
+
     ackcb({ success: true, guest: false, room: updatedRoom })
   })
 

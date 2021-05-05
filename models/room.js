@@ -29,6 +29,11 @@ async function getRoomById (roomId) {
 async function setSong (roomId, song, startTime) {
   const room = await getRoomById(roomId)
 
+  if (room == null) {
+    // room has already closed
+    return
+  }
+
   if (song == null) {
     delete room.currentSong
     delete room.songStartTime
