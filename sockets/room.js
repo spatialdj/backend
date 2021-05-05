@@ -49,14 +49,18 @@ async function onRoomChange (room, isRoomOpen, newHost, userLeft) {
   if (userLeft) {
     onLeave(userLeft, roomId)
 
-    // remove the leaving user's vote
-    if (!Object.prototype.hasOwnProperty.call(room.votes, userLeft.username)) {
-      return
-    }
+    if (room.votes) {
+      // remove the leaving user's vote
+      if (!Object.prototype.hasOwnProperty.call(room.votes, userLeft.username)) {
+        return
+      }
 
-    delete room.votes[userLeft.username]
-    await hsetAsync(getRoomKey(roomId), 'json', JSON.stringify(room))
-    io.to(roomId).emit('user_vote', room.votes)
+      console.log(userLeft)
+
+      delete room.votes[userLeft.username]
+      await hsetAsync(getRoomKey(roomId), 'json', JSON.stringify(room))
+      io.to(roomId).emit('user_vote', room.votes)
+    }
   }
 
   if (newHost) {
@@ -133,7 +137,6 @@ function onNewSocketConnection (socket) {
 
   socket.on('join_room', async (roomId, ackcb) => {
     if (!(await isRoomValid(roomId))) {
-      console.log(`FAIL join_room: ${roomId}`, 'Invalid roomId')
       return ackcb({ success: false })
     }
 
@@ -141,7 +144,6 @@ function onNewSocketConnection (socket) {
 
     // probably the host joining the room after creation, do not do anything
     if (connectedRoomId) {
-      console.log(`join_room: ${roomId}`, req.user.username)
       return ackcb({ success: true, guest: false, room: await getRoomById(connectedRoomId) })
     }
 
@@ -151,7 +153,6 @@ function onNewSocketConnection (socket) {
     socket.join(roomId)
 
     if (req.isUnauthenticated()) {
-      console.log(`join_room: ${roomId}`, 'Unauthed user')
       return ackcb({ success: true, guest: true, room: await getRoomById(roomId) })
     }
 
