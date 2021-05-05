@@ -55,8 +55,6 @@ async function onRoomChange (room, isRoomOpen, newHost, userLeft) {
         return
       }
 
-      console.log(userLeft)
-
       delete room.votes[userLeft.username]
       await hsetAsync(getRoomKey(roomId), 'json', JSON.stringify(room))
       io.to(roomId).emit('user_vote', room.votes)
