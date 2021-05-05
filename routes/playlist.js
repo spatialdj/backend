@@ -106,7 +106,12 @@ router.delete('/delete/:playlistId', async (req, res) => {
   const playlistId = req.params.playlistId
   const username = req.user.username
 
-  const success = await jsonDelAsync(getUserKey(username), '.playlist.' + playlistId)
+  const success = await jsonDelAsync(getUserKey(username), `.playlist.${playlistId}`)
+
+  if (await jsonGetAsync(getUserKey(username), '.selectedPlaylist') === playlistId) {
+    // deleted playlist is selected playlist
+    await jsonSetAsync(getUserKey(username), '.selectedPlaylist', 'null')
+  }
 
   res.status(200).json({
     success: Boolean(success)
