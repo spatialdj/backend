@@ -35,7 +35,7 @@ router.post('/create', async (req, res) => {
 
   res.status(200).json({
     success: true,
-    playlistId: playlistId
+    playlist: playlist
   })
 })
 
@@ -47,6 +47,8 @@ router.put('/add/:playlistId', async (req, res) => {
   const playlistId = req.params.playlistId
   const song = req.body.song
   const username = req.user.username
+
+  song.id = uuidv4()
 
   try {
     await jsonArrAppendAsync(getUserKey(username), '.playlist.' + playlistId + '.queue', JSON.stringify(song))
@@ -69,16 +71,13 @@ router.delete('/remove/:playlistId', async (req, res) => {
   const songId = req.body.id
   const username = req.user.username
 
-  let success = false
   const songs = JSON.parse(await jsonGetAsync(getUserKey(username), '.playlist.' + playlistId + '.queue'))
-  for (let idx = 0; idx < songs.length; idx++) {
-    if (songs[idx].id === songId) {
-      songs.splice(idx, 1)
-      success = true
-      break
-    }
+  const songIndex = songs.findIndex(song => song.id === songId)
+  const success = songIndex !== -1
+
+  if (success) {
+    songs.splice(songIndex, 1)
   }
-  console.log(songs)
 
   try {
     await jsonSetAsync(getUserKey(username), '.playlist.' + playlistId + '.queue', JSON.stringify(songs))
