@@ -63,7 +63,7 @@ router.post('/register', async (req, res, next) => {
   const user = {
     username: username,
     password: passwordHash,
-    profilePicture: `http://tinygraphs.com/labs/isogrids/hexa16/${username}?theme=bythepool&numcolors=4&fmt=svg`,
+    profilePicture: `https://avatars.dicebear.com/api/human/${username}.svg?width=64&height=64`,
     playlist: {}
   }
 
