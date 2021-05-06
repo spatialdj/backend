@@ -1,6 +1,7 @@
 import redis from '../redis_client.js'
 import { promisify } from 'util'
 import { getUserKey } from '../routes/auth.js'
+import io from '../socketio_server.js'
 
 const delAsync = promisify(redis.del).bind(redis)
 const lrangeAsync = promisify(redis.lrange).bind(redis)
@@ -72,7 +73,7 @@ async function getNextSong (roomId) {
 
     if (!selectedPlaylist) {
       await lpopAsync(queueKey)
-      // todo: send socket event telling user they have been removed from queue
+      io.to(roomId).emit('dequeued')
       continue
     }
 
@@ -80,7 +81,7 @@ async function getNextSong (roomId) {
 
     if (!nextSong) {
       await lpopAsync(queueKey)
-      // todo: send socket event telling user they have been removed from queue
+      io.to(roomId).emit('dequeued')
       continue
     }
 
