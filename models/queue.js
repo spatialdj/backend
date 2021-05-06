@@ -86,6 +86,8 @@ async function getNextSong (roomId) {
 
     await jsonArrAppendAsync(userKey, `.playlist.${selectedPlaylist}.queue`, nextSong)
     song = JSON.parse(nextSong)
+    // attach username to song to send to client later
+    song.username = username
     break
   }
 
