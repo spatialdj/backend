@@ -21,7 +21,7 @@ async function startPlayingQueue (roomId) {
 
   // set song in room
   await setSong(roomId, song, startTime)
-  io.to(roomId).emit('play_song', song.username, song.videoId, startTime)
+  io.to(roomId).emit('play_song', song, startTime)
 
   const timer = setTimeout(async () => {
     await startPlayingQueue(roomId)
