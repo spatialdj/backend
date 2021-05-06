@@ -1,8 +1,11 @@
 import io from '../socketio_server.js'
-import { setSong, getRoomById } from '../models/room.js'
+import { setSong, getRoomById, getRoomKey } from '../models/room.js'
+import redis from '../redis_client.js'
 import socketsRoom from './room.js'
+import { promisify } from 'util'
 
 const { getConnectedRoomId } = socketsRoom
+const hsetAsync = promisify(redis.hset).bind(redis)
 
 const voteType = {
   DISLIKE: 'dislike',
@@ -14,7 +17,7 @@ function onNewSocketConnection (socket) {
   const req = socket.request
 
   socket.on('vote', async (type) => {
-    if (!req.isUnauthenticated()) {
+    if (req.isUnauthenticated()) {
       return
     }
 
@@ -27,7 +30,7 @@ function onNewSocketConnection (socket) {
     }
 
     // invalid vote type
-    if (type !== voteType.DISLIKE || type !== voteType.LIKE || type !== voteType.NONE) {
+    if (type !== voteType.DISLIKE && type !== voteType.LIKE && type !== voteType.NONE) {
       return
     }
 
@@ -49,10 +52,11 @@ function onNewSocketConnection (socket) {
     if (room.votes[user.username] === voteType.NONE) {
       delete room.votes[user.username]
     } else {
-      room.votes[user.username] = voteType
+      room.votes[user.username] = type
     }
 
     io.to(roomId).emit('user_vote', room.votes)
+    await hsetAsync(getRoomKey(roomId), 'json', JSON.stringify(room))
   })
 }
 
