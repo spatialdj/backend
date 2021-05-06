@@ -5,29 +5,41 @@ import socketsRoom from './room.js'
 
 const { getConnectedRoomId } = socketsRoom
 
-const QUEUE_BUFFER_MS = 5000
+const QUEUE_BUFFER_MS = 2000
+const SYNC_INTERVAL_MS = 2000
 
 async function startPlayingQueue (roomId) {
+  if (queueTimers.has(roomId)) {
+    clearTimeout(queueTimers.get(roomId).syncTimer)
+  }
+
   const song = await getNextSong(roomId)
 
   if (song === null) {
     // no one is in queue, stop
     io.to(roomId).emit('stop_song')
     await setSong(roomId, null)
+
+    queueTimers.delete(roomId)
     return
   }
 
   const startTime = Date.now()
 
   // set song in room
-  await setSong(roomId, song, startTime)
-  io.to(roomId).emit('play_song', song, startTime)
+  await setSong(roomId, song)
+  io.to(roomId).emit('play_song', song)
 
-  const timer = setTimeout(async () => {
+  const queueTimer = setTimeout(async () => {
     await startPlayingQueue(roomId)
   }, song.duration + QUEUE_BUFFER_MS)
 
-  queueTimers.set(roomId, timer)
+  const syncTimer = setInterval(async () => {
+    // take difference for current duration
+    io.to(roomId).emit('sync_song', { seekTime: Date.now() - startTime })
+  }, SYNC_INTERVAL_MS)
+
+  queueTimers.set(roomId, { queueTimer, syncTimer })
   // todo: implement skip with clearTimeout(timer)
 }
 
