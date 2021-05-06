@@ -46,6 +46,18 @@ async function removeFromQueue (roomId, user) {
   await lremAsync(getQueueKey(roomId), -1, user.username)
 }
 
+async function skipSong (roomId) {
+  if (!timers.has(roomId)) {
+    return
+  }
+
+  const { queueTimer, syncTimer } = timers.get(roomId)
+
+  // cancel current timers
+  clearTimeout(queueTimer)
+  clearTimeout(syncTimer)
+}
+
 async function getNextSong (roomId) {
   // Returns the id of the next song to be played.
   // If the next user doesn't have a selectedPlaylist, or if the selectedPlaylist
@@ -101,5 +113,6 @@ export {
   getQueue,
   removeFromQueue,
   getNextSong,
+  skipSong,
   timers
 }

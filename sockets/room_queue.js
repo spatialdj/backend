@@ -93,4 +93,7 @@ function onNewSocketConnection (socket) {
   })
 }
 
-export default { onNewSocketConnection }
+export {
+  onNewSocketConnection,
+  startPlayingQueue
+}

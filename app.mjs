@@ -20,7 +20,7 @@ import './passport_setup.js'
 import io from './socketio_server.js'
 
 import socketsRoom from './sockets/room.js'
-import socketsRoomQueue from './sockets/room_queue.js'
+import * as socketsRoomQueue from './sockets/room_queue.js'
 import socketsVote from './sockets/vote.js'
 
 import { fileURLToPath } from 'url'

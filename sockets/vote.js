@@ -1,8 +1,10 @@
 import io from '../socketio_server.js'
-import { setSong, getRoomById, getRoomKey } from '../models/room.js'
+import { getRoomById, getRoomKey } from '../models/room.js'
 import redis from '../redis_client.js'
 import socketsRoom from './room.js'
 import { promisify } from 'util'
+import { skipSong } from '../models/queue.js'
+import { startPlayingQueue } from './room_queue.js'
 
 const { getConnectedRoomId } = socketsRoom
 const hsetAsync = promisify(redis.hset).bind(redis)
@@ -49,8 +51,12 @@ function onNewSocketConnection (socket) {
       return
     }
 
-    if (room.votes[user.username] === voteType.NONE) {
+    if (type === voteType.NONE) {
       delete room.votes[user.username]
+    } else if (type === voteType.DISLIKE) {
+      // todo: skip for now, implement % to skip
+      skipSong(roomId)
+      startPlayingQueue(roomId)
     } else {
       room.votes[user.username] = type
     }
