@@ -18,6 +18,8 @@ const client = redis.createClient({
 })
 
 const ftcreateAsync = promisify(client.ft_create).bind(client)
+const keysAsync = promisify(client.keys).bind(client)
+const del = promisify(client.del).bind(client)
 
 const roomsIndex = 'roomsIndex'
 
@@ -26,6 +28,23 @@ client.on('error', err => {
 })
 
 client.on('ready', async () => {
+  // delete stale data
+  const roomKeys = await keysAsync('room:*')
+  const queueKeys = await keysAsync('queue:*')
+  const socketKeys = await keysAsync('socket:*')
+
+  if (roomKeys?.length) {
+    await del(roomKeys)
+  }
+
+  if (queueKeys?.length) {
+    await del(queueKeys)
+  }
+
+  if (socketKeys?.length) {
+    await del(socketKeys)
+  }
+
   // indices on:
   // - name
   // - decscription

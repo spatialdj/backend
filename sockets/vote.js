@@ -6,7 +6,8 @@ const { getConnectedRoomId } = socketsRoom
 
 const voteType = {
   DISLIKE: 'dislike',
-  LIKE: 'like'
+  LIKE: 'like',
+  NONE: 'none'
 }
 
 function onNewSocketConnection (socket) {
@@ -26,7 +27,7 @@ function onNewSocketConnection (socket) {
     }
 
     // invalid vote type
-    if (type !== voteType.DISLIKE && type !== voteType.LIKE) {
+    if (type !== voteType.DISLIKE || type !== voteType.LIKE || type !== voteType.NONE) {
       return
     }
 
@@ -40,12 +41,17 @@ function onNewSocketConnection (socket) {
       return
     }
 
-    if (room.votes[user.username] === voteType) {
+    if (room.votes[user.username] === type) {
       // vote type is same as before, do nothing
       return
     }
 
-    room.votes[user.username] = voteType
+    if (room.votes[user.username] === voteType.NONE) {
+      delete room.votes[user.username]
+    } else {
+      room.votes[user.username] = voteType
+    }
+
     io.to(roomId).emit('user_vote', room.votes)
   })
 }
