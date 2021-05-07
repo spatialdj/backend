@@ -144,7 +144,7 @@ async function addMessage (message, roomId) {
 
   if (!messagesId) {
     messagesId = uuidv4()
-    await hsetAsync(getRoomKey(roomId), 'messages')
+    await hsetAsync(getRoomKey(roomId), 'messages', JSON.stringify(message))
   }
 
   lpushAsync(getMessageKey(messagesId), JSON.stringify(message))

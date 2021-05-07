@@ -8,7 +8,7 @@ const { getConnectedRoomId } = socketsRoom
 function onNewSocketConnection (socket) {
   const req = socket.request
 
-  socket.on('chat_message', async (message, timeSent) => {
+  socket.on('chat_message', async (message, timeSent, ackcb) => {
     if (req.isAuthenticated()) {
       const roomId = await getConnectedRoomId(socket.id)
       const messageObject = {
@@ -30,10 +30,16 @@ function onNewSocketConnection (socket) {
       io.in(roomId).emit('chat_message', {
         message: message,
         timeSent: timeSent,
-        user: req.user.username
+        sender: {
+          username: req.user.username,
+          profilePicture: req.user.profilePicture
+        }
       })
 
       console.log(`chat_message: ${roomId}`, `${req.user.username}: ${message}`)
+      return ackcb({ success: true })
+    } else {
+      return ackcb({ success: false })
     }
   })
 }
