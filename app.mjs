@@ -30,7 +30,16 @@ const __dirname = path.dirname(__filename)
 
 const app = express()
 
-app.use(helmet())
+app.use(
+  helmet.contentSecurityPolicy({
+    directives: {
+      defaultSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'youtube.com'"],
+      styleSrc: ["'self'", "'unsafe-inline'"]
+    }
+  })
+)
+
 app.use(logger('dev'))
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))

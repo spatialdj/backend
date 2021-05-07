@@ -29,6 +29,8 @@ client.on('error', err => {
 
 client.on('ready', async () => {
   // delete stale data
+
+  /*
   const roomKeys = await keysAsync('room:*')
   const queueKeys = await keysAsync('queue:*')
   const socketKeys = await keysAsync('socket:*')
@@ -44,6 +46,7 @@ client.on('ready', async () => {
   if (socketKeys?.length) {
     await del(socketKeys)
   }
+  */
 
   // indices on:
   // - name
