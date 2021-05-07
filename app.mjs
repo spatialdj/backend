@@ -22,6 +22,7 @@ import io from './socketio_server.js'
 import socketsRoom from './sockets/room.js'
 import * as socketsRoomQueue from './sockets/room_queue.js'
 import socketsVote from './sockets/vote.js'
+import socketsChat from './sockets/messages.js'
 
 import { fileURLToPath } from 'url'
 
@@ -88,6 +89,7 @@ io.on('connection', socket => {
   socketsRoom.onNewSocketConnection(socket)
   socketsRoomQueue.onNewSocketConnection(socket)
   socketsVote.onNewSocketConnection(socket)
+  socketsChat.onNewSocketConnection(socket)
 })
 
 export default app

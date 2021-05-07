@@ -1,13 +1,17 @@
 import { promisify } from 'util'
 import redis from '../redis_client.js'
+import { v4 as uuidv4 } from 'uuid'
 
 // prefix for redis key
 const roomPrefix = 'room:'
+const messagePrefix = 'message:'
 
 const existsAsync = promisify(redis.exists).bind(redis)
 const hgetAsync = promisify(redis.hget).bind(redis)
 const hsetAsync = promisify(redis.hset).bind(redis)
 const delAsync = promisify(redis.del).bind(redis)
+const lpushAsync = promisify(redis.lpush).bind(redis)
+const lrangeAsync = promisify(redis.lrange).bind(redis)
 
 function getRandomNum (min, max) {
   return Math.floor(Math.random() * (max - min)) + min
@@ -16,6 +20,10 @@ function getRandomNum (min, max) {
 // get key in redis given id
 function getRoomKey (id) {
   return roomPrefix + id
+}
+
+function getMessageKey (id) {
+  return messagePrefix + id
 }
 
 async function isRoomValid (roomId) {
@@ -130,11 +138,35 @@ async function removeUserFromRoom (user, roomId, onRoomChange) {
   await hsetAsync(getRoomKey(roomId), 'json', JSON.stringify(room))
 }
 
+// message queue has the latest messages on the left, and the earlier ones on the right
+async function addMessage (message, roomId) {
+  let messagesId = await hgetAsync(getRoomKey(roomId), 'messages')
+
+  if (!messagesId) {
+    messagesId = uuidv4()
+    await hsetAsync(getRoomKey(roomId), 'messages')
+  }
+
+  lpushAsync(getMessageKey(messagesId), JSON.stringify(message))
+}
+
+async function getMessageRange (start, end, roomId) {
+  const messagesId = await hgetAsync(getRoomKey(roomId), 'messages')
+
+  if (!messagesId) return []
+
+  const messages = await lrangeAsync(getMessageKey(messagesId), start, end - 1)
+
+  return messages.map(message => JSON.parse(message))
+}
+
 export {
   getRoomKey,
   isRoomValid,
   getRoomById,
   addUserToRoom,
   removeUserFromRoom,
-  setSong
+  setSong,
+  addMessage,
+  getMessageRange
 }
