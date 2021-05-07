@@ -33,11 +33,11 @@ const app = express()
 app.use(
   helmet.contentSecurityPolicy({
     directives: {
-      defaultSrc: ["'self'", "'unsafe-inline'"],
+      defaultSrc: ['*', "'unsafe-inline'"],
       scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'https://www.youtube.com'],
       styleSrc: ["'self'", "'unsafe-inline'"],
-      imgSrc: ["'self'", 'http://tinygraphs.com', 'https://avatars.dicebear.com'],
-      frameSrc: ["'self'", 'https://www.youtube.com']
+      imgSrc: ['*', "'unsafe-inline'", 'http://tinygraphs.com', 'https://avatars.dicebear.com', 'https://www.youtube.com'],
+      frameSrc: ["'self'", "'unsafe-inline'", 'https://www.youtube.com']
     }
   })
 )
