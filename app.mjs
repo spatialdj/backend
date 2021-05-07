@@ -76,11 +76,6 @@ app.use('/api/rooms', roomsRouter)
 app.use('/api/song', songRouter)
 app.use('/api/playlist', playlistRouter)
 
-// catch 404 and forward to error handler
-app.use((req, res, next) => {
-  next(createError(404))
-})
-
 // error handler
 app.use((err, req, res, next) => {
   // set locals, only providing error in development
@@ -92,6 +87,10 @@ app.use((err, req, res, next) => {
   // render the error page
   res.status(err.status || 500)
   res.send(err)
+})
+
+app.get('*', function (req, res, next) {
+  res.sendFile(join(__dirname, 'public') + '/index.html')
 })
 
 // socket.io root listener
