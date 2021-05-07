@@ -34,9 +34,9 @@ app.use(
   helmet.contentSecurityPolicy({
     directives: {
       defaultSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "'youtube.com'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'https://www.youtube.com'],
       styleSrc: ["'self'", "'unsafe-inline'"],
-      imgSrc: ["'self'", "'http://tinygraphs.com/labs/isogrids/hexa16/*'"]
+      imgSrc: ["'self'", 'http://tinygraphs.com']
     }
   })
 )
