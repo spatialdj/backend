@@ -62,12 +62,12 @@ async function addUserToRoom (user, roomId, onJoin) {
   const members = room.members
 
   if (Object.prototype.hasOwnProperty.call(members, user.username)) {
+    console.log('member already joined')
     members[user.username].joined++
     await hsetAsync(getRoomKey(roomId), 'json', JSON.stringify(room))
     return room
   }
 
-  await hsetAsync(getRoomKey(roomId), 'numMembers', numMembers + 1)
   room.numMembers++
 
   const position = {
@@ -84,7 +84,7 @@ async function addUserToRoom (user, roomId, onJoin) {
 
   onJoin(user, roomId, position)
 
-  await hsetAsync(getRoomKey(roomId), 'json', JSON.stringify(room))
+  await hsetAsync(getRoomKey(roomId), 'json', JSON.stringify(room), 'numMembers', numMembers + 1)
   return room
 }
 
@@ -108,6 +108,7 @@ async function removeUserFromRoom (user, roomId, onRoomChange) {
   // if only one browser/tab is open for this account
   if (member.joined === 1) {
     await hsetAsync(getRoomKey(roomId), 'numMembers', numMembers - 1)
+    room.numMembers--
     delete members[user.username]
     memberLeft = true
   } else {

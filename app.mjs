@@ -1,4 +1,3 @@
-import createError from 'http-errors'
 import express from 'express'
 import helmet from 'helmet'
 import path, { join } from 'path'
@@ -8,7 +7,6 @@ import passport from 'passport'
 import session from 'express-session'
 import connectRedis from 'connect-redis'
 
-import indexRouter from './routes/index.js'
 import { authRouter } from './routes/auth.js'
 import roomsRouter from './routes/rooms.js'
 import songRouter from './routes/song.js'
@@ -71,7 +69,6 @@ io.use(wrap(sessionMiddleware))
 io.use(wrap(passport.initialize()))
 io.use(wrap(passport.session()))
 
-app.use('/api/', indexRouter)
 app.use('/api/auth', authRouter)
 app.use('/api/rooms', roomsRouter)
 app.use('/api/song', songRouter)
