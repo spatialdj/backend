@@ -47,16 +47,20 @@ function onNewSocketConnection (socket) {
     }
 
     if (room.votes[user.username] === type) {
-      // vote type is same as before, do nothing
-      return
-    }
-
-    if (type === voteType.NONE) {
+      // vote type is same as before, remove user's vote
+      delete room.votes[user.username]
+    } else if (type === voteType.NONE) {
       delete room.votes[user.username]
     } else if (type === voteType.DISLIKE) {
       // todo: skip for now, implement % to skip
-      skipSong(roomId)
-      startPlayingQueue(roomId)
+      room.votes[user.username] = type
+      const numMembers = Object.keys(room.members).length
+      const numDislikes = Object.keys(room.votes).filter(username => room.votes[username] === voteType.DISLIKE).length;
+      // If dislikes >= 50% of the people in the room, skip song
+      if (numDislikes >= Math.ceil(numMembers / 2)) {
+        skipSong(roomId)
+        startPlayingQueue(roomId)
+      }
     } else {
       room.votes[user.username] = type
     }
