@@ -42,6 +42,29 @@ function onNewSocketConnection (socket) {
       return ackcb({ success: false })
     }
   })
+
+  socket.on('reaction', async (reaction) => {
+    if (req.isAuthenticated()) {
+      const roomId = await getConnectedRoomId(socket.id)
+
+      if (!roomId) {
+        console.log('FAIL reaction', 'No room id')
+        return
+      }
+
+      io.in(roomId).emit('reaction', {
+        message: reaction,
+        sender: {
+          username: req.user.username
+        }
+      })
+
+      console.log(
+        `reaction: ${roomId}`,
+        `${req.user.username}: ${reaction}`
+      )
+    }
+  })
 }
 
 export default { onNewSocketConnection }
