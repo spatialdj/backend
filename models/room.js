@@ -144,7 +144,7 @@ async function addMessage (message, roomId) {
 
   if (!messagesId) {
     messagesId = uuidv4()
-    await hsetAsync(getRoomKey(roomId), 'messages', JSON.stringify(message))
+    await hsetAsync(getRoomKey(roomId), 'messages', messagesId)
   }
 
   lpushAsync(getMessageKey(messagesId), JSON.stringify(message))
@@ -157,7 +157,7 @@ async function getMessageRange (start, end, roomId) {
 
   const messages = await lrangeAsync(getMessageKey(messagesId), start, end - 1)
 
-  return messages.map(message => JSON.parse(message))
+  return messages.map(message => JSON.parse(message)).reverse()
 }
 
 export {

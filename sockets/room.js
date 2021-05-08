@@ -2,7 +2,7 @@ import io from '../socketio_server.js'
 import { v4 as uuidv4 } from 'uuid'
 import redis from '../redis_client.js'
 import { removeFromQueue, getQueue, deleteQueue } from '../models/queue.js'
-import { getRoomKey, isRoomValid, addUserToRoom, removeUserFromRoom, getRoomById } from '../models/room.js'
+import { getRoomKey, isRoomValid, addUserToRoom, removeUserFromRoom, getRoomById, getMessageRange } from '../models/room.js'
 import { promisify } from 'util'
 
 const hsetAsync = promisify(redis.hset).bind(redis)
@@ -164,6 +164,7 @@ function onNewSocketConnection (socket) {
     console.log(`join_room: ${roomId}`, req.user.username)
 
     updatedRoom.queue = await getQueue(roomId)
+    updatedRoom.messages = await getMessageRange(0, -1, roomId)
 
     ackcb({ success: true, guest: false, room: updatedRoom })
   })
