@@ -52,14 +52,16 @@ function onNewSocketConnection (socket) {
     } else if (type === voteType.NONE) {
       delete room.votes[user.username]
     } else if (type === voteType.DISLIKE) {
-      // todo: skip for now, implement % to skip
       room.votes[user.username] = type
-      const numMembers = Object.keys(room.members).length
-      const numDislikes = Object.keys(room.votes).filter(username => room.votes[username] === voteType.DISLIKE).length;
+
+      const numMembers = room.numMembers
+      const numDislikes = Object.keys(room.votes).filter(username => room.votes[username] === voteType.DISLIKE).length
+
       // If dislikes >= 50% of the people in the room, skip song
       if (numDislikes >= Math.ceil(numMembers / 2)) {
         skipSong(roomId)
-        startPlayingQueue(roomId)
+        await startPlayingQueue(roomId)
+        return
       }
     } else {
       room.votes[user.username] = type

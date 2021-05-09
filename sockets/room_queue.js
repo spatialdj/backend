@@ -8,7 +8,16 @@ const { getConnectedRoomId } = socketsRoom
 const QUEUE_BUFFER_MS = 2000
 const SYNC_INTERVAL_MS = 2000
 
+const playQueueReqs = new Set()
+
 async function startPlayingQueue (roomId) {
+  // do not let this function run multiple times at once for the same room
+  if (playQueueReqs.has(roomId)) {
+    return
+  }
+
+  playQueueReqs.add(roomId)
+
   if (queueTimers.has(roomId)) {
     clearTimeout(queueTimers.get(roomId).syncTimer)
   }
@@ -28,7 +37,11 @@ async function startPlayingQueue (roomId) {
 
   // set song in room
   await setSong(roomId, song)
+
+  playQueueReqs.delete(roomId)
   io.to(roomId).emit('play_song', song)
+
+  console.log('play song', song.title)
 
   const queueTimer = setTimeout(async () => {
     await startPlayingQueue(roomId)
