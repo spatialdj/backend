@@ -41,8 +41,6 @@ async function startPlayingQueue (roomId) {
   playQueueReqs.delete(roomId)
   io.to(roomId).emit('play_song', song)
 
-  console.log('play song', song.title)
-
   const queueTimer = setTimeout(async () => {
     await startPlayingQueue(roomId)
   }, song.duration + QUEUE_BUFFER_MS)
