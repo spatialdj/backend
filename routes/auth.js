@@ -78,4 +78,28 @@ router.post('/register', async (req, res, next) => {
   res.status(200).send()
 })
 
+router.put('/update', async (req, res, next) => {
+  if (!req.isAuthenticated()) {
+    return res.status(401).send()
+  }
+
+  const profilePicture = req.body.profilePicture
+
+  if (profilePicture.match(/^http[^?]*.(jpg|jpeg|gif|png|tiff|bmp|webp|svg)(\?(.*))?$/gmi) == null) {
+    return res.status(400).send()
+  }
+
+  const updatedUser = {
+    username: req.user.username,
+    password: req.user.password,
+    profilePicture: profilePicture,
+    playlist: req.user.playlist,
+    selectedPlaylist: req.user.selectedPlaylist
+  }
+
+  await jsonSetAsync(getUserKey(req.user.username), '.', JSON.stringify(updatedUser))
+
+  res.status(200).send()
+})
+
 export { router as authRouter, getUserKey }
