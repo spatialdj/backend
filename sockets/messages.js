@@ -59,10 +59,7 @@ function onNewSocketConnection (socket) {
         }
       })
 
-      console.log(
-        `reaction: ${roomId}`,
-        `${req.user.username}: ${reaction}`
-      )
+      console.log(`reaction: ${roomId}`, `${req.user.username}: ${reaction}`)
     }
   })
 }
