@@ -51,7 +51,6 @@ async function startPlayingQueue (roomId) {
   }, SYNC_INTERVAL_MS)
 
   queueTimers.set(roomId, { queueTimer, syncTimer })
-  // todo: implement skip with clearTimeout(timer)
 }
 
 function onNewSocketConnection (socket) {
