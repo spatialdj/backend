@@ -64,7 +64,6 @@ async function onRoomChange (room, isRoomOpen, newHost, userLeft) {
   }
 
   if (newHost) {
-    // TODO: emit to clients about new host
     io.in(roomId).emit('new_host', newHost)
   }
 }
@@ -171,14 +170,12 @@ function onNewSocketConnection (socket) {
 
   socket.on('pos_change', async (position) => {
     if (req.isUnauthenticated()) {
-      console.log('FAIL pos_change', 'Unauthed user')
       return
     }
 
     const roomId = await getConnectedRoomId(socket.id)
 
     if (!roomId) {
-      console.log('FAIL pos_change', 'Invalid roomId')
       return
     }
 
@@ -188,7 +185,6 @@ function onNewSocketConnection (socket) {
 
     // user not in room
     if (!Object.prototype.hasOwnProperty.call(members, user.username)) {
-      console.log(`FAIL pos_change: ${roomId}`, `User ${user.username} not in room`)
       return
     }
 
@@ -196,7 +192,6 @@ function onNewSocketConnection (socket) {
     await hsetAsync(getRoomKey(room.id), 'json', JSON.stringify(room))
 
     io.in(room.id).emit('pos_change', user.username, position)
-    console.log(`pos_change: ${roomId}`, `${user.username} {${position.x}, ${position.y}}`)
   })
 
   socket.on('leave_room', async () => {

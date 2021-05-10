@@ -38,7 +38,6 @@ async function startPlayingQueue (roomId) {
   // set song in room
   await setSong(roomId, song)
 
-  playQueueReqs.delete(roomId)
   io.to(roomId).emit('play_song', song)
 
   const queueTimer = setTimeout(async () => {
@@ -51,6 +50,7 @@ async function startPlayingQueue (roomId) {
   }, SYNC_INTERVAL_MS)
 
   queueTimers.set(roomId, { queueTimer, syncTimer })
+  playQueueReqs.delete(roomId)
 }
 
 function onNewSocketConnection (socket) {

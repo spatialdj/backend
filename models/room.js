@@ -62,7 +62,6 @@ async function addUserToRoom (user, roomId, onJoin) {
   const members = room.members
 
   if (Object.prototype.hasOwnProperty.call(members, user.username)) {
-    console.log('member already joined')
     members[user.username].joined++
     await hsetAsync(getRoomKey(roomId), 'json', JSON.stringify(room))
     return room
