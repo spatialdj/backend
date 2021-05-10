@@ -30,6 +30,7 @@ async function startPlayingQueue (roomId) {
     await setSong(roomId, null)
 
     queueTimers.delete(roomId)
+    playQueueReqs.delete(roomId)
     return
   }
 
@@ -80,7 +81,7 @@ function onNewSocketConnection (socket) {
 
     io.to(roomId).emit('user_join_queue', position, userFragment)
 
-    if (room.currentSong === null && position === 0) {
+    if (room.currentSong == null && position === 0) {
       // play the user's song since it's the first in queue
       await startPlayingQueue(roomId)
     }

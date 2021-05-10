@@ -89,7 +89,13 @@ async function getNextSong (roomId) {
       continue
     }
 
-    const nextSong = await jsonArrPopAsync(userKey, `.playlist.${selectedPlaylist}.queue`, 0)
+    let nextSong = null
+
+    try {
+      nextSong = await jsonArrPopAsync(userKey, `.playlist.${selectedPlaylist}.queue`, 0)
+    } catch (error) {
+      // no songs in playlist
+    }
 
     if (!nextSong) {
       await lpopAsync(queueKey)
