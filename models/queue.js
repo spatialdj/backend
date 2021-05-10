@@ -85,7 +85,7 @@ async function getNextSong (roomId) {
 
     if (!selectedPlaylist) {
       await lpopAsync(queueKey)
-      io.to(roomId).emit('dequeued')
+      io.to(roomId).emit('dequeued', username)
       continue
     }
 
@@ -99,7 +99,7 @@ async function getNextSong (roomId) {
 
     if (!nextSong) {
       await lpopAsync(queueKey)
-      io.to(roomId).emit('dequeued')
+      io.to(roomId).emit('dequeued', username)
       continue
     }
 
