@@ -39,32 +39,32 @@ async function onRoomClose (roomId) {
   await deleteQueue(roomId)
 }
 
-async function onRoomChange (room, isRoomOpen, newHost, userLeft) {
-  const roomId = room.id
-
-  if (!isRoomOpen) {
-    return await onRoomClose(roomId)
-  }
-
-  if (userLeft) {
-    onLeave(userLeft, roomId)
-
-    if (room.votes) {
-      // remove the leaving user's vote
-      if (!Object.prototype.hasOwnProperty.call(room.votes, userLeft.username)) {
-        return
-      }
-
-      delete room.votes[userLeft.username]
-      await hsetAsync(getRoomKey(roomId), 'json', JSON.stringify(room))
-      io.to(roomId).emit('user_vote', room.votes)
+function onRoomChange (roomId) {
+  return async (room, isRoomOpen, newHost, userLeft) => {
+    if (!isRoomOpen) {
+      return await onRoomClose(roomId)
     }
 
-    await removeFromQueue(roomId, userLeft)
-  }
+    if (userLeft) {
+      onLeave(userLeft, roomId)
 
-  if (newHost) {
-    io.in(roomId).emit('new_host', newHost)
+      if (room.votes) {
+        // remove the leaving user's vote
+        if (!Object.prototype.hasOwnProperty.call(room.votes, userLeft.username)) {
+          return
+        }
+
+        delete room.votes[userLeft.username]
+        await hsetAsync(getRoomKey(roomId), 'json', JSON.stringify(room))
+        io.to(roomId).emit('user_vote', room.votes)
+      }
+
+      await removeFromQueue(roomId, userLeft)
+    }
+
+    if (newHost) {
+      io.in(roomId).emit('new_host', newHost)
+    }
   }
 }
 
@@ -206,7 +206,7 @@ function onNewSocketConnection (socket) {
     socket.leave(roomId)
     // remove in redis
     await delAsync(getSocketKey(socket.id))
-    await removeUserFromRoom(req.user, roomId, onRoomChange)
+    await removeUserFromRoom(req.user, roomId, onRoomChange(roomId))
     console.log(`leave_room: ${roomId}`, req?.user?.username ?? 'Unauthed user')
   })
 
@@ -220,7 +220,7 @@ function onNewSocketConnection (socket) {
 
     // remove in redis
     await delAsync(getSocketKey(socket.id))
-    await removeUserFromRoom(req.user, roomId, onRoomChange)
+    await removeUserFromRoom(req.user, roomId, onRoomChange(roomId))
     console.log(`disconnecting: ${roomId}`, req?.user?.username ?? 'Unauthed user')
   })
 }
