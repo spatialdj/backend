@@ -59,6 +59,17 @@ function onNewSocketConnection (socket) {
         }
       })
 
+      const timeSent = Date.now()
+      const message = 'reacted with ' + reaction
+      io.in(roomId).emit('chat_message', {
+        message: message,
+        timeSent: timeSent,
+        sender: {
+          username: req.user.username,
+          profilePicture: req.user.profilePicture
+        }
+      })
+
       console.log(`reaction: ${roomId}`, `${req.user.username}: ${reaction}`)
     }
   })
