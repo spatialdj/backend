@@ -1,6 +1,7 @@
 import { promisify } from 'util'
 import redis from '../redis_client.js'
 import { v4 as uuidv4 } from 'uuid'
+import { isInQueue } from './queue.js'
 
 // prefix for redis key
 const roomPrefix = 'room:'
@@ -63,6 +64,7 @@ async function addUserToRoom (user, roomId, onJoin) {
 
   if (Object.prototype.hasOwnProperty.call(members, user.username)) {
     members[user.username].joined++
+    room.has_joined = await isInQueue(roomId, user)
     await hsetAsync(getRoomKey(roomId), 'json', JSON.stringify(room))
     return room
   }

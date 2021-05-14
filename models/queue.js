@@ -28,6 +28,10 @@ async function deleteQueue (roomId) {
   timers.delete(roomId)
 }
 
+async function isInQueue (roomId, user) {
+  return Boolean(await lposAsync(getQueueKey(roomId), user.username))
+}
+
 async function addToQueue (roomId, user) {
   // check if user is already in queue
   if (await lposAsync(getQueueKey(roomId), user.username) != null) {
@@ -115,6 +119,7 @@ async function getNextSong (roomId) {
 
 export {
   deleteQueue,
+  isInQueue,
   addToQueue,
   getQueue,
   removeFromQueue,
