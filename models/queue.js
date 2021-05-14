@@ -29,7 +29,7 @@ async function deleteQueue (roomId) {
 }
 
 async function isInQueue (roomId, user) {
-  return Boolean(await lposAsync(getQueueKey(roomId), user.username))
+  return (await lposAsync(getQueueKey(roomId), user.username)) !== null
 }
 
 async function addToQueue (roomId, user) {

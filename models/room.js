@@ -119,6 +119,7 @@ async function removeUserFromRoom (user, roomId, onRoomChange) {
   // check if there are no more members
   if (Object.keys(members).length === 0) {
     await onRoomChange(false)
+    delAsync(getMessageKey(room.messages))
     return await delAsync(getRoomKey(roomId))
   }
 
@@ -157,7 +158,7 @@ async function getMessageRange (start, end, roomId) {
 
   if (!messagesId) return []
 
-  const messages = await lrangeAsync(getMessageKey(messagesId), start, end - 1)
+  const messages = await lrangeAsync(getMessageKey(messagesId), start, end)
 
   return messages.map(message => JSON.parse(message)).reverse()
 }
