@@ -7,7 +7,7 @@ router.get('/search', async (req, res) => {
   const query = req.query.search
   const videos = await searchVideos(query)
 
-  res.status(200).json({ success: true, data: { videos } })
+  res.status(200).json({ success: true, videos })
 })
 
 export default router
