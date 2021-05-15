@@ -1,5 +1,5 @@
 import io from '../socketio_server.js'
-import { v4 as uuidv4 } from 'uuid'
+import { nanoid } from 'nanoid'
 import redis from '../redis_client.js'
 import { removeFromQueue, getQueue, deleteQueue } from '../models/queue.js'
 import { getRoomKey, isRoomValid, addUserToRoom, removeUserFromRoom, getRoomById, getMessageRange } from '../models/room.js'
@@ -38,7 +38,9 @@ async function onRoomClose (roomId) {
   io.in(roomId).emit('room_closed')
   await deleteQueue(roomId)
 
-  io.sockets.clients(roomId).forEach(function (socket) {
+  const sockets = await io.in(roomId).fetchSockets()
+
+  sockets.forEach(function (socket) {
     socket.leave(roomId)
   })
 }
@@ -52,17 +54,7 @@ function onRoomChange (roomId) {
     if (userLeft) {
       onLeave(userLeft, roomId)
 
-      if (room.votes) {
-        // remove the leaving user's vote
-        if (!Object.prototype.hasOwnProperty.call(room.votes, userLeft.username)) {
-          return
-        }
-
-        delete room.votes[userLeft.username]
-        await hsetAsync(getRoomKey(roomId), 'json', JSON.stringify(room))
-        io.to(roomId).emit('user_vote', room.votes)
-      }
-
+      console.log('user left')
       await removeFromQueue(roomId, userLeft)
     }
 
@@ -85,7 +77,7 @@ function onNewSocketConnection (socket) {
       return ackcb({ success: false })
     }
 
-    const id = uuidv4()
+    const id = nanoid(10)
 
     const { name, description, private: privateRoom, genres } = data
 
