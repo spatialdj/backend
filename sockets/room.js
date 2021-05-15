@@ -38,7 +38,9 @@ async function onRoomClose (roomId) {
   io.in(roomId).emit('room_closed')
   await deleteQueue(roomId)
 
-  io.in(roomId).fetchSockets().forEach(function (socket) {
+  const sockets = await io.in(roomId).fetchSockets()
+
+  sockets.forEach(function (socket) {
     socket.leave(roomId)
   })
 }
