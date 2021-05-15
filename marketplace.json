@@ -13,6 +13,11 @@
     "redis_features": ["caching", "database"],
     "redis_modules": ["RedisJSON", "RediSearch"],
     "app_image_urls": [
+        "https://i.imgur.com/0GdOVn7.png",
+        "https://i.imgur.com/4QM7EIu.png",
+        "https://i.imgur.com/vRLTaM2.png",
+        "https://i.imgur.com/7LEio8z.png",
+        "https://i.imgur.com/e7jAhY5.png",
         "https://avatars.githubusercontent.com/u/83042272"
     ],
     "youtube_url": "",
