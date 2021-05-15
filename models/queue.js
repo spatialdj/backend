@@ -25,7 +25,14 @@ function getQueueKey (roomId) {
 
 async function deleteQueue (roomId) {
   await delAsync(getQueueKey(roomId))
-  timers.delete(roomId)
+
+  if (timers.has(roomId)) {
+    const { queueTimer, syncTimer } = timers.get(roomId)
+
+    clearTimeout(queueTimer)
+    clearTimeout(syncTimer)
+    timers.delete(roomId)
+  }
 }
 
 async function isInQueue (roomId, user) {

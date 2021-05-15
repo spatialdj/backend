@@ -37,6 +37,10 @@ function onLeave (user, roomId) {
 async function onRoomClose (roomId) {
   io.in(roomId).emit('room_closed')
   await deleteQueue(roomId)
+
+  io.sockets.clients(roomId).forEach(function (socket) {
+    socket.leave(roomId)
+  })
 }
 
 function onRoomChange (roomId) {
