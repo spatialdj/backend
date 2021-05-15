@@ -21,7 +21,7 @@ THIS README TEMPLATE WAS ADAPTED FROM https://github.com/othneildrew/Best-README
     ·
     <a href="https://github.com/reeedis/backend/issues">Request Feature</a>
     .
-    <a href="https://github.com/reeedis/backend">Backend Repo</a>
+    <a href="https://github.com/reeedis/frontend">Frontend Repo</a>
   </p>
 </p>
 
