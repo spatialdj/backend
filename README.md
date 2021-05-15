@@ -9,8 +9,8 @@ Redis is used as both a cache and a database
 
 # How the data is stored:
 - Room
-  - Type: `HASH`
   - Prefix: `room:`
+  - Type: `HASH`
   - Fields:
     - `messages`: redis key to messages to this room
     - `id`: id of this room
@@ -77,3 +77,10 @@ Redis is used as both a cache and a database
             ]
             }
         }```
+- Messages
+  - Prefix: `message`
+  - Type: `LIST`
+  - Data: JSON-stringified objects, with fields `id`, `timeSent`, `text`, `sender` (which contains fields `username` and `profilePicture`)
+  - Commands:
+    - `LPUSH message:${messagesId} ${data}`: Add a new message to the room's message history
+    - `LRANGE message:${messagesId} ${start} ${end}`: Get message history of a room, starting with the newest and going backwards
