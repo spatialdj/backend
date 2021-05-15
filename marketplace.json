@@ -11,7 +11,7 @@
     "language": ["JavaScript"],
     "redis_commands": ["HGET", "HSET", "EXISTS", "FT.SEARCH", "RPUSH", "LRANGE", "LREM", "LMOVE", "SET", "GET", "JSON.SET", "JSON.GET", "LPUSH", "DEL", "JSON.ARRAPPEND", "JSON.ARRPOP"],
     "redis_features": ["caching", "database"],
-    "redis_modules": ["RediJSON", "RediSearch"],
+    "redis_modules": ["RedisJSON", "RediSearch"],
     "app_image_urls": [
         "https://avatars.githubusercontent.com/u/83042272"
     ],
