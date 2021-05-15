@@ -185,7 +185,7 @@ Redis is used as both a cache and a database
 4. Copy files from `/build` to the backend `/public` folder
 5. Go to root directory of backend
 6. Install dependencies: `npm ci`
-7. Create a file called `config.yml` with the following contents:
+7. Create a file called `config.js` with the following contents:
 ```
 export default {
   redisHost: 'localhost',
