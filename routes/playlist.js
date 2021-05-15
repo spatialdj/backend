@@ -29,7 +29,7 @@ router.post('/create', async (req, res) => {
   }
 
   try {
-    await jsonSetAsync(getUserKey(req.user.username), '.playlist.' + playlistId, JSON.stringify(playlist))
+    await jsonSetAsync(getUserKey(req.user.username), `.playlist.${playlistId}`, JSON.stringify(playlist))
   } catch (error) {
     return res.status(400).json(error)
   }
@@ -59,7 +59,7 @@ router.put('/add/:playlistId', async (req, res) => {
   song.duration = duration
 
   try {
-    await jsonArrAppendAsync(getUserKey(username), '.playlist.' + playlistId + '.queue', JSON.stringify(song))
+    await jsonArrAppendAsync(getUserKey(username), `.playlist.${playlistId}.queue`, JSON.stringify(song))
   } catch (error) {
     return res.status(400).json(error)
   }
@@ -79,7 +79,7 @@ router.delete('/remove/:playlistId', async (req, res) => {
   const songId = req.body.id
   const username = req.user.username
 
-  const songs = JSON.parse(await jsonGetAsync(getUserKey(username), '.playlist.' + playlistId + '.queue'))
+  const songs = JSON.parse(await jsonGetAsync(getUserKey(username), `.playlist.${playlistId}.queue`))
   const songIndex = songs.findIndex(song => song.id === songId)
   const success = songIndex !== -1
 
@@ -88,7 +88,7 @@ router.delete('/remove/:playlistId', async (req, res) => {
   }
 
   try {
-    await jsonSetAsync(getUserKey(username), '.playlist.' + playlistId + '.queue', JSON.stringify(songs))
+    await jsonSetAsync(getUserKey(username), `.playlist.${playlistId}.queue`, JSON.stringify(songs))
   } catch (error) {
     return res.status(400).json(error)
   }
@@ -127,7 +127,7 @@ router.put('/update/:playlistId', async (req, res) => {
   const username = req.user.username
   const playlist = req.body.playlist
 
-  const success = await jsonSetAsync(getUserKey(username), '.playlist.' + playlistId, JSON.stringify(playlist), 'XX')
+  const success = await jsonSetAsync(getUserKey(username), `.playlist.${playlistId}`, JSON.stringify(playlist), 'XX')
 
   res.status(200).json({
     success: Boolean(success)
@@ -143,7 +143,7 @@ router.get('/get/:playlistId', async (req, res) => {
   const username = req.user.username
 
   try {
-    const songs = await jsonGetAsync(getUserKey(username), '.playlist.' + playlistId + '.queue')
+    const songs = await jsonGetAsync(getUserKey(username), `.playlist.${playlistId}.queue`)
 
     res.status(200).json({
       success: true,

@@ -160,17 +160,41 @@ Redis is used as both a cache and a database
      -  `RPUSH queue:${roomId} ${username}`
   -  When it is a user's turn to play a song, the user is moved to the end of the queue: 
      -  `LMOVE queue:${roomId} queue:${roomId} LEFT RIGHT`
+  -  At the same time, the song played is moved to the end of the user's playlist:
+     -  `song = JSON.ARRPOP user:${username} .playlist.${playlistId}.queue 0`
+     -  `JSON.ARRAPPEND user:${username} .playlist.${playlistId}.queue song`
 - For playlists:
-  - When a new playlist is created:
+  - When a new playlist is created/updating an existing playlist:
     - `JSON.SET user:${username} .playlist.${playlistId} ${playlistJson}`
   - When a playlist is deleted:
     - `JSON.DEL user:${username} .playlist.${playlistId}`
   - When the user selects a playlist:
     - `JSON.SET user:${username} .selectedPlaylist ${playlistId})`
-  - When a song is added to a playlist: 
+  - When a song is added to a playlist:
     - `JSON.ARRAPPEND user:${username} .playlist.${playlistId}.queue ${song}`
   - To get songs from a playlist:
     - `JSON.GET user:${username} .playlist.${playlistId}.queue`
+
+#### Code Example: Delete a Specific Song from a User's Playlist
+
+```JavaScript
+const songs = JSON.parse(await jsonGetAsync(getUserKey(username),
+											`.playlist.${playlistId}.queue`))
+const songIndex = songs.findIndex(song => song.id === songId)
+const success = songIndex !== -1
+
+if (success) {
+	songs.splice(songIndex, 1)
+}
+
+try {
+	await jsonSetAsync(getUserKey(username),
+					   `.playlist.${playlistId}.queue`,
+					   JSON.stringify(songs))
+} catch (error) {
+	return res.status(400).json(error)
+}
+```
 
 ## How to run it locally?
 ### Prerequisites:
