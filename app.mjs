@@ -39,6 +39,9 @@ app.use(
         imgSrc: ['*', "'unsafe-inline'", 'http://tinygraphs.com', 'https://avatars.dicebear.com', 'https://www.youtube.com'],
         frameSrc: ["'self'", "'unsafe-inline'", 'https://www.youtube.com']
       }
+    },
+    referrerPolicy: {
+      policy: ['origin', 'unsafe-url']
     }
   })
 )
