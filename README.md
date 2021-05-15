@@ -3,6 +3,7 @@ THIS README TEMPLATE WAS ADAPTED FROM https://github.com/othneildrew/Best-README
 -->
 
 <!-- PROJECT LOGO -->
+<!--
 <br />
 <p align="center">
   <a href="https://github.com/reeedis">
@@ -24,6 +25,14 @@ THIS README TEMPLATE WAS ADAPTED FROM https://github.com/othneildrew/Best-README
     <a href="https://github.com/reeedis/frontend">Frontend Repo</a>
   </p>
 </p>
+-->
+
+![SpatialDjLogo](https://avatars.githubusercontent.com/u/83042272)
+# Spatial Dj
+- [View Demo](http://spatial.francochen.com)
+- [Report Bug](https://github.com/reeedis/backend/issues)
+- [Request Feature](https://github.com/reeedis/backend/issues)
+- [Frontend Repo](https://github.com/reeedis/frontend)
 
 ## Tech Stack
 - Frontend: JavaScript, React, Chakra UI, Redux, Socket.io, Axios
