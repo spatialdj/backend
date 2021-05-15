@@ -183,13 +183,13 @@ const songIndex = songs.findIndex(song => song.id === songId)
 const success = songIndex !== -1
 
 if (success) {
-	songs.splice(songIndex, 1)
+  songs.splice(songIndex, 1)
 }
 
 try {
-	await jsonSetAsync(getUserKey(username), `.playlist.${playlistId}.queue`, JSON.stringify(songs))
+  await jsonSetAsync(getUserKey(username), `.playlist.${playlistId}.queue`, JSON.stringify(songs))
 } catch (error) {
-	return res.status(400).json(error)
+  return res.status(400).json(error)
 }
 ```
 
