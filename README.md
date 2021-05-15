@@ -6,7 +6,7 @@ THIS README TEMPLATE WAS ADAPTED FROM https://github.com/othneildrew/Best-README
 <!--
 <br />
 <p align="center">
-  <a href="https://github.com/reeedis">
+  <a href="https://github.com/spatialdj">
     <img src="https://avatars.githubusercontent.com/u/83042272" alt="Logo" width="80" height="80">
   </a>
 
@@ -18,11 +18,11 @@ THIS README TEMPLATE WAS ADAPTED FROM https://github.com/othneildrew/Best-README
     <br />
     <a href="http://spatial.francochen.com/">View Demo</a>
     ·
-    <a href="https://github.com/reeedis/backend/issues">Report Bug</a>
+    <a href="https://github.com/spatialdj/backend/issues">Report Bug</a>
     ·
-    <a href="https://github.com/reeedis/backend/issues">Request Feature</a>
+    <a href="https://github.com/spatialdj/backend/issues">Request Feature</a>
     .
-    <a href="https://github.com/reeedis/frontend">Frontend Repo</a>
+    <a href="https://github.com/spatialdj/frontend">Frontend Repo</a>
   </p>
 </p>
 -->
@@ -30,9 +30,9 @@ THIS README TEMPLATE WAS ADAPTED FROM https://github.com/othneildrew/Best-README
 ![SpatialDjLogo](https://avatars.githubusercontent.com/u/83042272)
 # Spatial Dj
 - [View Demo](http://spatial.francochen.com)
-- [Report Bug](https://github.com/reeedis/backend/issues)
-- [Request Feature](https://github.com/reeedis/backend/issues)
-- [Frontend Repo](https://github.com/reeedis/frontend)
+- [Report Bug](https://github.com/spatialdj/backend/issues)
+- [Request Feature](https://github.com/spatialdj/backend/issues)
+- [Frontend Repo](https://github.com/spatialdj/frontend)
 
 ## Tech Stack
 - Frontend: JavaScript, React, Chakra UI, Redux, Socket.io, Axios
