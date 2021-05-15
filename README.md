@@ -32,7 +32,7 @@ THIS README TEMPLATE WAS ADAPTED FROM https://github.com/othneildrew/Best-README
 ## How it works
 Redis is used as both a cache and a database
 
-# How the data is stored:
+## How the data is stored:
 - Room
   - Prefix: `room:`
   - Type: `HASH`
