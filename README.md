@@ -32,7 +32,7 @@ THIS README TEMPLATE WAS ADAPTED FROM https://github.com/othneildrew/Best-README
 ## How it works
 Redis is used as both a cache and a database
 
-## How the data is stored:
+### How the data is stored:
 - Room
   - Prefix: `room:`
   - Type: `HASH`
@@ -54,13 +54,17 @@ Redis is used as both a cache and a database
   - Commands:
     - `HGET ${roomId} json`: get JSON representation of this room
     - `HSET room:${roomId} id ${roomId} name ${name} description ${description} private ${private} genres ${genres} numMembers ${numMembers} json ${roomJson}`: Create a new room or update room (not all fields required)
-    - `EXISTS ${roomId}`: check if a room exists (used when attempting to join room)
+    - `EXISTS ${roomId}`: Check if a room exists (used when attempting to join room)
     - `FT.SEARCH @name|description:(${searchQuery}) @private:{false} @genres:{${genres}} SORTBY numMembers DESC LIMIT ${offset} ${limit}`: Used for rooms page for searching
-- Song queue
+- User queue
   - Prefix: `queue:`
   - Type: `LIST`
   - Data: A list of usernames of users in the queue of the associated room
-  - 
+  - Commands:
+    - `RPUSH queue:${roomId} ${username}`: Add user to queue or create queue
+    - `LRANGE queue:${roomId} 0 -1`: Get all users in the queue
+    - `LREM queue:${roomId} -1, ${username}`: Remove user from queue
+    - `LMOVE queue:${roomId} queue:${roomId} LEFT RIGHT`: Cycle through queue (move user from front of queue to back of queue)
 - Session
   - Prefix: `sess:`
   - Type: `STRING`
@@ -102,6 +106,19 @@ Redis is used as both a cache and a database
             ]
           }
           ```
+  - Example user:
+    - ```
+        {
+          "username": ...,
+          "password": ...,
+          "profilePicture": ...,
+          "playlist": { ... },
+          "selectedPlaylist": ...
+        }
+      ```
+  - Commands:
+    - `JSON.SET user:${username} ${path} ${userJson}`: Create a new user or update user data
+    - `JSON.GET user:${username} ${path}`: Get user data
 - Messages
   - Prefix: `message:`
   - Type: `LIST`
@@ -109,3 +126,74 @@ Redis is used as both a cache and a database
   - Commands:
     - `LPUSH message:${messagesId} ${data}`: Add a new message to the room's message history
     - `LRANGE message:${messagesId} ${start} ${end}`: Get message history of a room, starting with the newest and going backwards
+- Socket
+  - Prefix: `socket:`
+  - Type: `STRING`
+  - Data: The username that this socket belongs to
+  - Commands:
+    - `SET socket:${socketId} ${username}`: Create a new socket
+    - `GET socket:${socketId}`: Get associated username associated with socket
+    - `DEL socket:${socketId}`: Delete socket
+
+### Data flow
+- For users:
+  - When a user registers, a user is created like: 
+    - `JSON.SET user:${username} . ${userJson}`
+  - To log a user in, a new session is created: 
+    - `SET sess:${sessionId} ${data}`
+  - To retrieve user information: 
+    - `JSON.GET user:${username} ${path}`
+- For sockets:
+  - When a new socket is connected to the server and the request is authenticated (user is logged in), a new socket is created and the associated username is stored: 
+    - `SET socket:${socketId} ${username}`
+  - When a socket is disconnected from the server, it is deleted:
+    - `DEL socket:${socketId}`
+- For rooms:
+  - When a room is searched for, RedisSearch is used to make the search: 
+    - `FT.SEARCH @name|description:(${searchQuery}) @private:{false} @genres:{${genres}} SORTBY numMembers DESC LIMIT ${offset} ${limit}`
+  - When a new room is created, a room is created like: 
+    - `HSET room:${roomId} id ${roomId} name ${name} description ${description} private ${private} genres ${genres} numMembers ${numMembers} json ${roomJson}`
+  - When a room is updated, it is updated like (all fields are optional): 
+    - `HSET room:${roomId} id ${roomId} name ${name} description ${description} private ${private} genres ${genres} numMembers ${numMembers} json ${roomJson}`
+- For queues:
+  -  When a user joins the queue, a queue is created/the user is added to the queue: 
+     -  `RPUSH queue:${roomId} ${username}`
+  -  When it is a user's turn to play a song, the user is moved to the end of the queue: 
+     -  `LMOVE queue:${roomId} queue:${roomId} LEFT RIGHT`
+- For playlists:
+  - When a new playlist is created:
+    - `JSON.SET user:${username} .playlist.${playlistId} ${playlistJson}`
+  - When a playlist is deleted:
+    - `JSON.DEL user:${username} .playlist.${playlistId}`
+  - When the user selects a playlist:
+    - `JSON.SET user:${username} .selectedPlaylist ${playlistId})`
+  - When a song is added to a playlist: 
+    - `JSON.ARRAPPEND user:${username} .playlist.${playlistId}.queue ${song}`
+  - To get songs from a playlist:
+    - `JSON.GET user:${username} .playlist.${playlistId}.queue`
+
+## How to run it locally?
+### Prerequisites:
+- Node v14.16.1
+- npm v6.14.12
+- Redis v6.2.3 with RediSearch v2.0 and RedisJSON v1.0
+
+### Running in production
+1. Go to root folder of frontend
+2. Install dependencies: `npm ci`
+3. Build frontend: `npm run build`
+4. Copy files from `/build` to the backend `/public` folder
+5. Go to root directory of backend
+6. Install dependencies: `npm ci`
+7. Create a file called `config.yml` with the following contents:
+```
+export default {
+  redisHost: 'localhost',
+  redisPassword: '',
+  sessionSecret: 'somesessionsecret',
+  passwordSaltRounds: 10,
+  youtube_key: 'youtube_api_key'
+}
+```
+8. Replace the values with your own information
+9. Run server: `PORT=80 NODE_ENV=production node bin/www.js`
