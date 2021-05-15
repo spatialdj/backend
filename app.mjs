@@ -30,13 +30,15 @@ const __dirname = path.dirname(__filename)
 const app = express()
 
 app.use(
-  helmet.contentSecurityPolicy({
-    directives: {
-      defaultSrc: ['*', "'unsafe-inline'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'https://www.youtube.com'],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      imgSrc: ['*', "'unsafe-inline'", 'http://tinygraphs.com', 'https://avatars.dicebear.com', 'https://www.youtube.com'],
-      frameSrc: ["'self'", "'unsafe-inline'", 'https://www.youtube.com']
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ['*', "'unsafe-inline'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'https://www.youtube.com'],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ['*', "'unsafe-inline'", 'http://tinygraphs.com', 'https://avatars.dicebear.com', 'https://www.youtube.com'],
+        frameSrc: ["'self'", "'unsafe-inline'", 'https://www.youtube.com']
+      }
     }
   })
 )
