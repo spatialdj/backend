@@ -54,17 +54,7 @@ function onRoomChange (roomId) {
     if (userLeft) {
       onLeave(userLeft, roomId)
 
-      if (room.votes) {
-        // remove the leaving user's vote
-        if (!Object.prototype.hasOwnProperty.call(room.votes, userLeft.username)) {
-          return
-        }
-
-        delete room.votes[userLeft.username]
-        await hsetAsync(getRoomKey(roomId), 'json', JSON.stringify(room))
-        io.to(roomId).emit('user_vote', room.votes)
-      }
-
+      console.log('user left')
       await removeFromQueue(roomId, userLeft)
     }
 
