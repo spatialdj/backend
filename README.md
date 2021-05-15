@@ -1,4 +1,29 @@
-# Spatial.dj backend
+<!--
+THIS README TEMPLATE WAS ADAPTED FROM https://github.com/othneildrew/Best-README-Template
+-->
+
+<!-- PROJECT LOGO -->
+<br />
+<p align="center">
+  <a href="https://github.com/reeedis">
+    <img src="https://avatars.githubusercontent.com/u/83042272" alt="Logo" width="80" height="80">
+  </a>
+
+  <h3 align="center">Spatial.dj Backend</h3>
+
+  <p align="center">
+    Backend for Spatial.dj, a web app that allows you to listen to music with your friends.
+    <br />
+    <br />
+    <a href="http://spatial.francochen.com/">View Demo</a>
+    ·
+    <a href="https://github.com/reeedis/backend/issues">Report Bug</a>
+    ·
+    <a href="https://github.com/reeedis/backend/issues">Request Feature</a>
+    .
+    <a href="https://github.com/reeedis/backend">Backend Repo</a>
+  </p>
+</p>
 
 ## Tech Stack
 - Frontend: JavaScript, React, Chakra UI, Redux, Socket.io, Axios
@@ -54,8 +79,8 @@ Redis is used as both a cache and a database
     - `selectedPlaylist`: user's currently selected playlist
     - `playlist`: playlist objects
       - Example playlist:
-        - ```{
-            "db168000-fa58-491b-81d0-1287d866fcf7": {
+        - ```
+          "db168000-fa58-491b-81d0-1287d866fcf7": {
             "id": "db168000-fa58-491b-81d0-1287d866fcf7",
             "name": "Text playlist",
             "user": "exampleuser",
@@ -75,10 +100,10 @@ Redis is used as both a cache and a database
                 "duration": 348000
                 }
             ]
-            }
-        }```
+          }
+          ```
 - Messages
-  - Prefix: `message`
+  - Prefix: `message:`
   - Type: `LIST`
   - Data: JSON-stringified objects, with fields `id`, `timeSent`, `text`, `sender` (which contains fields `username` and `profilePicture`)
   - Commands:
