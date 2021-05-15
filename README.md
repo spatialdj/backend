@@ -178,8 +178,7 @@ Redis is used as both a cache and a database
 #### Code Example: Delete a Specific Song from a User's Playlist
 
 ```JavaScript
-const songs = JSON.parse(await jsonGetAsync(getUserKey(username),
-											`.playlist.${playlistId}.queue`))
+const songs = JSON.parse(await jsonGetAsync(getUserKey(username), `.playlist.${playlistId}.queue`))
 const songIndex = songs.findIndex(song => song.id === songId)
 const success = songIndex !== -1
 
@@ -188,9 +187,7 @@ if (success) {
 }
 
 try {
-	await jsonSetAsync(getUserKey(username),
-					   `.playlist.${playlistId}.queue`,
-					   JSON.stringify(songs))
+	await jsonSetAsync(getUserKey(username), `.playlist.${playlistId}.queue`, JSON.stringify(songs))
 } catch (error) {
 	return res.status(400).json(error)
 }
