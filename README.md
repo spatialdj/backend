@@ -34,12 +34,55 @@ THIS README TEMPLATE WAS ADAPTED FROM https://github.com/othneildrew/Best-README
 - [Request Feature](https://github.com/spatialdj/backend/issues)
 - [Frontend Repo](https://github.com/spatialdj/frontend)
 
+![SpatialDjHomepage](https://i.imgur.com/0GdOVn7.png)
+
 ## Tech Stack
-- Frontend: JavaScript, React, Chakra UI, Redux, Socket.io, Axios
+- Frontend: JavaScript, React, Chakra UI, Redux, Socket.io Client, Axios
 - Backend: JavaScript, Node.js, Express, Redis (node-redis), Socket.io
 
 ## How it works
-Redis is used as both a cache and a database
+Redis is used as both a cache and a database. It helps achieve low latency and can handle large amounts of data flowing between multiple clients and the server. RediSearch helps make searching for rooms snappy.
+
+Here is a video showcasing the features of `Spatial.dj` (click the image to watch on YouTube):
+
+[![SpatialDjVideo](https://img.youtube.com/vi/qpOGIA4jPNw/0.jpg)](https://www.youtube.com/watch?v=qpOGIA4jPNw)
+
+An overview of the core systems is given below:
+
+### Rooms
+Users can create rooms where others can join. A room is a place where multiple people can listen to the same songs together, at the same time. A timer is set on the backend to switch songs seamlessly when the current one ends, and it also sends out a sync_song event through `Socket.io` every 2 seconds to keep all clients in sync.
+
+### Playlists
+Songs are played through playlists created by users. A playlist is a collection of songs.
+Users can freely add or remove songs from their playlists and rearrange the order of their songs. Playlists help facilitate the queue system of `Spatial.dj`.
+
+### Queue System
+The order of which songs are played is determined by the queue system. Users can join the queue in the room to have the songs in their selected playlist played. The order in which users join the queue determines the order on which songs are played. For each user in the queue, the first song in their selected playlist will be played. Then the first song will be cycled to the back of the playlist. This way, each user in the queue is guaranteed to have one of their songs played and playlists of any size will continue to keep playing until the user leaves the queue.
+- Consider the following example:
+- Three users A, B, C
+- Each user's selected playlist has three songs labelled as follows: A = [1, 2, 3], B = [4, 5, 6], C = [7, 8, 9]
+  - A joins queue first
+  - B joins queue second
+  - C joins queue third
+  - First, song 1 from A's playlist is played
+  - Second, song 4 from B's playlist is played
+  - Third, song 7 from C's playlist is played
+  - Fourth, song 2 from A's playlist is played
+  - Fifth, song 5 from B's playlist is played
+  - This pattern continues...
+This may seem complicated in writing, but in practice, it is a very intuitive and fair system.
+The queue system is handled through `Socket.io` events. Events will be emitted when the song plays, or when there are no more users in the queue (as to stop the song).
+
+### Voting
+Users can like or dislike the current song. This is handled through `Socket.io` events.
+Disliking the current song allows users to skip the song. If at least half of the people in the room have disliked the song, it will be skipped.
+
+### Architecture Diagram
+The following image illustrates the architecture of `Spatial.dj`. Clients communicate with the `Express.js` server through HTTP requests and `Socket.io` events. The server communicate with the YouTube API to allow users to search Youtube for songs and with the Redis database to handle storing data and searching for rooms.
+
+![SpatialDjArchitectureDiagram](https://i.imgur.com/C5nlnWd.jpg)
+
+## Redis Commands
 
 ### How the data is stored:
 - Room
@@ -208,18 +251,45 @@ try {
 - npm v6.14.12
 - Redis v6.2.3 with RediSearch v2.0 and RedisJSON v1.0
 
+We used the [RedisMod](https://github.com/RedisLabsModules/redismod) Docker image to setup our Redis modules.
+
+1. Make sure to clone the frontend of `Spatial.dj` [here](https://github.com/spatialdj/frontend)!
+2. In the root directory of frontend, type: `npm install` to install frontend dependencies
+3. Go to the root directory of backend and create a file called `config.js` with the following contents:
+```javascript
+export default {
+  redisHost: 'localhost',
+  redisPassword: 'your_password_for_redis_here',
+  sessionSecret: 'somesessionsecret',
+  passwordSaltRounds: 10,
+  youtube_key: 'youtube_api_key'
+}
+```
+|Property|Description|
+|---|---|
+|redisHost|URL of where your Redis is hosted|
+|redisPassword|Password to your Redis|
+|sessionSecret|Secret for session cookies to authenticate users |
+|passwordSaltRounds|Number of salt rounds for bcrypt|
+|youtube_key|Your YouTube API key, follow the steps [here](https://developers.google.com/youtube/v3/getting-started) on how to get one|
+4. In the root directory of backend, type: `npm install` to install backend dependencies
+5. Run `npm start` in root directory of backend
+6. Run `npm start` in root directory of frontend
+7. Your app should be running at localhost:3000
+
+
 ### Running in production
-1. Go to root folder of frontend
+1. Go to root directory of frontend
 2. Install dependencies: `npm ci`
 3. Build frontend: `npm run build`
 4. Copy files from `/build` to the backend `/public` folder
 5. Go to root directory of backend
 6. Install dependencies: `npm ci`
-7. Create a file called `config.js` with the following contents:
-```
+7. Create a file called `config.js` in the root directory of backend with the following contents:
+```javascript
 export default {
   redisHost: 'localhost',
-  redisPassword: '',
+  redisPassword: 'your_password_for_redis_here',
   sessionSecret: 'somesessionsecret',
   passwordSaltRounds: 10,
   youtube_key: 'youtube_api_key'
