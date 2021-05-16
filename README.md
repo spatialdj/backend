@@ -41,7 +41,7 @@ THIS README TEMPLATE WAS ADAPTED FROM https://github.com/othneildrew/Best-README
 - Backend: JavaScript, Node.js, Express, Redis (node-redis), Socket.io
 
 ## How it works
-Redis is used as both a cache and a database. It helps achieve low latency and can handle large amounts of data flowing between multiple clients and the server. RediSearch helps make searching for rooms snappy.
+Redis is used as both a cache and a database.
 
 Here is a video showcasing the features of `Spatial.dj` (click the image to watch on YouTube):
 
@@ -50,7 +50,7 @@ Here is a video showcasing the features of `Spatial.dj` (click the image to watc
 An overview of the core systems is given below:
 
 ### Rooms
-Users can create rooms where others can join. A room is a place where multiple people can listen to the same songs together, at the same time. A timer is set on the backend to switch songs seamlessly when the current one ends, and it also sends out a sync_song event through `Socket.io` every 2 seconds to keep all clients in sync.
+Users can create rooms where others can join. A room is a place where multiple people can listen to the same songs together, at the same time.
 
 ### Playlists
 Songs are played through playlists created by users. A playlist is a collection of songs.
