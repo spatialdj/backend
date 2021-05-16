@@ -13,12 +13,13 @@
     "redis_features": ["caching", "database"],
     "redis_modules": ["RedisJSON", "RediSearch"],
     "app_image_urls": [
+        "https://avatars.githubusercontent.com/u/83042272",
         "https://i.imgur.com/0GdOVn7.png",
         "https://i.imgur.com/4QM7EIu.png",
         "https://i.imgur.com/vRLTaM2.png",
         "https://i.imgur.com/7LEio8z.png",
         "https://i.imgur.com/e7jAhY5.png",
-        "https://avatars.githubusercontent.com/u/83042272"
+        "https://raw.githubusercontent.com/spatialdj/backend/master/ArchitectureDiagram.jpg"
     ],
     "youtube_url": "",
     "special_tags": ["Hackathon", "Build on Redis Hackathon"],
