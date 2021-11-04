@@ -290,6 +290,7 @@ export default {
 export default {
   redisHost: 'localhost',
   redisPassword: 'your_password_for_redis_here',
+  redisPort: 6379, // 6379 is the default or use your custom port
   sessionSecret: 'somesessionsecret',
   passwordSaltRounds: 10,
   youtube_key: 'youtube_api_key'

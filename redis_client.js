@@ -14,7 +14,8 @@ redis.addCommand('lmove')
 
 const client = redis.createClient({
   host: config.redisHost,
-  password: config.redisPassword
+  password: config.redisPassword,
+  port: config.redisPort,
 })
 
 const ftcreateAsync = promisify(client.ft_create).bind(client)
