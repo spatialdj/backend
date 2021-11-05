@@ -103,7 +103,7 @@ async function getNextSong (roomId) {
     let nextSong = null
 
     try {
-      nextSong = await jsonArrPopAsync(userKey, `.playlist.${selectedPlaylist}.queue`, 0)
+      nextSong = await jsonArrPopAsync(userKey, `playlist["${selectedPlaylist}"]["queue"]`, 0)
     } catch (error) {
       // no songs in playlist
     }
@@ -114,7 +114,7 @@ async function getNextSong (roomId) {
       continue
     }
 
-    await jsonArrAppendAsync(userKey, `.playlist.${selectedPlaylist}.queue`, nextSong)
+    await jsonArrAppendAsync(userKey, `playlist["${selectedPlaylist}"]["queue"]`, nextSong)
     song = JSON.parse(nextSong)
     // attach username to song to send to client later
     song.username = username
