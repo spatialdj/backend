@@ -14,8 +14,8 @@ const delAsync = promisify(redis.del).bind(redis)
 const lpushAsync = promisify(redis.lpush).bind(redis)
 const lrangeAsync = promisify(redis.lrange).bind(redis)
 
-function getRandomNum (min, max) {
-  return Math.floor(Math.random() * (max - min)) + min
+function getRandomScaledNum () {
+  return Math.round(Math.random() * 100) / 100
 }
 
 // get key in redis given id
@@ -71,9 +71,10 @@ async function addUserToRoom (user, roomId, onJoin) {
 
   room.numMembers++
 
+  // generate random position in range [0, 0.5)
   const position = {
-    x: getRandomNum(0, 300),
-    y: getRandomNum(0, 300)
+    x: getRandomScaledNum() / 2,
+    y: getRandomScaledNum() / 2
   }
 
   room.members[user.username] = {

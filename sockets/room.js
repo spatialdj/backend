@@ -64,8 +64,8 @@ function onRoomChange (roomId) {
   }
 }
 
-function getRandomNum (min, max) {
-  return Math.floor(Math.random() * (max - min)) + min
+function getRandomScaledNum() {
+  return Math.round(Math.random() * 100) / 100
 }
 
 function onNewSocketConnection (socket) {
@@ -90,13 +90,14 @@ function onNewSocketConnection (socket) {
     const queue = []
     const currentSong = null
 
+    // generate random position in range [0, 0.5)
     members[req.user.username] = {
       joined: 1,
       username: req.user.username,
       profilePicture: req.user.profilePicture,
       position: {
-        x: getRandomNum(0, 300),
-        y: getRandomNum(0, 300)
+        x: getRandomScaledNum() / 2,
+        y: getRandomScaledNum() / 2
       }
     }
 
